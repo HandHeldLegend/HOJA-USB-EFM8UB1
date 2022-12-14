@@ -1,0 +1,189 @@
+C51 COMPILER V9.60.0.0   XI_DESCRIPTORS                                                    09/15/2022 21:04:23 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE XI_DESCRIPTORS
+OBJECT MODULE PLACED IN .\src\xi_descriptors.OBJ
+COMPILER INVOKED BY: C:\SiliconLabs\SimplicityStudio\v5\developer\toolchains\keil_8051\9.60\BIN\C51.exe C:\Users\Mitch\S
+                    -implicityStudio\v5_workspace\HOJA-USB-EFM8UB1\src\xi_descriptors.c OMF2 SMALL DEBUG OBJECTEXTEND ROM(LARGE) WARNINGLEVEL
+                    -(2) FLOATFUZZY(3) OPTIMIZE(9,SPEED) DEFINE(NDEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\Mitch\SimplicityStudio
+                    -\v5_workspace\HOJA-USB-EFM8UB1\inc;C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-EFM8UB1\inc\config;C:/SiliconLa
+                    -bs/SimplicityStudio/v5/developer/sdks/8051/v4.2.3//Lib/efm8_assert;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/805
+                    -1/v4.2.3//Lib/efm8_usb/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.3//Device/EFM8UB1/peripheral_driv
+                    -er/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.3//Lib/efm8_usbc/lib_kernel/inc;C:/SiliconLabs/Simpli
+                    -cityStudio/v5/developer/sdks/8051/v4.2.3//Lib/efm8_usbc/lib_usbc_pd/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdk
+                    -s/8051/v4.2.3//Device/shared/si8051Base;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.3//Device/EFM8UB1/in
+                    -c) REGFILE(HOJA-USB-EFM8UB1.ORC) PRINT(.\src\xi_descriptors.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OA OBJECT(.\src\xi_d
+                    -escriptors.OBJ)
+
+line level    source
+
+   1          /*
+   2           * xi_descriptors.c
+   3           *
+   4           *  Created on: Sep 10, 2022
+   5           *      Author: Mitch
+   6           */
+   7          
+   8          #include <si_toolchain.h>
+   9          #include <endian.h>
+  10          #include <stdlib.h>
+  11          #include <string.h>
+  12          #include <efm8_usb.h>
+  13          #include "descriptors.h"
+  14          
+  15          UTF16LE_PACKED_STATIC_CONST_STRING_DESC( xi_prodDesc[], XI_PROD_STRING, XI_PROD_SIZE);
+  16          
+  17          // Xbox One Device Description
+  18          SI_SEGMENT_VARIABLE(xi_deviceDesc[],
+  20                              const USB_DeviceDescriptor_TypeDef,
+  20                              SI_SEG_CODE) =
+  21          {
+  22            USB_DEVICE_DESCSIZE,     // bLength
+  23            USB_DEVICE_DESCRIPTOR,   // bLength
+  24            htole16(0x0200),    //bcdUSB
+  25            0xFF,               //bDeviceClass (Vendor Specific)
+  26            71,                 //bDeviceSubClass
+  27            208,                //bDeviceProtocol
+  28            64,                 //bMaxPacketSize0
+  29            XI_VENDOR_ID,   //idVendor (Microsoft Corp.)
+  30            XI_PROD_ID,  //idProduct (Microsoft Xbox One S Controller)
+  31            htole16(0x0408),    //bcdDevice
+  32            1,                  //iManufacturer
+  33            2,                  //iProduct
+  34            3,                  //iSerialNumber
+  35            1,                  //bNumConfigurations
+  36          };
+  37          
+  38          // Xbox One Config Description
+  39          SI_SEGMENT_VARIABLE(xi_configDesc[],
+  41                              const uint8_t,
+  41                              SI_SEG_CODE) =
+  42          {
+  43              USB_CONFIG_DESCSIZE,          //bLength
+  44              USB_CONFIG_DESCRIPTOR,       //bDescriptorType
+  45              0x40,       //wTotalLength LSB
+  46              0x00,       //wTotalLength MSB (64)
+C51 COMPILER V9.60.0.0   XI_DESCRIPTORS                                                    09/15/2022 21:04:23 PAGE 2   
+
+  47              2,          //bNumInterfaces
+  48              1,          //bConfigurationValue
+  49              0,          //iConfiguration
+  50          
+  51              0xA0,       //bmAttributes (Not self-powered remote-wakeup)
+  52              CONFIG_DESC_MAXPOWER_mA(500),        //bMaxPower
+  53          
+  54              /*Interface Descriptor*/
+  55              USB_INTERFACE_DESCSIZE,          //bLength
+  56              USB_INTERFACE_DESCRIPTOR,       //bDescriptorType
+  57              0,          //bInterfaceNumber
+  58              0,          //bAlternateSetting
+  59              2,          //bNumEndpoints
+  60              0xFF,       //bInterfaceClass (Vendor Specific)
+  61              0x47,       //bInterfaceSubClass
+  62              0xD0,       //bInterfaceProtocol
+  63              0,          //iInterface
+  64          
+  65              /*Endpoint 2 Descriptor*/
+  66              USB_ENDPOINT_DESCSIZE,          //bLength
+  67              USB_ENDPOINT_DESCRIPTOR,       //bDescriptorType
+  68              0x02,       //bEndpointAddress
+  69              USB_EPTYPE_INTR,       //bmAttributes (interrupt transfer)
+  70              0x40,       //wMaxPacketSize (64)
+  71              0x00,       //wMaxPacketSize (64)
+  72              0x4,          //bInterval
+  73          
+  74              /*Endpoint Descriptor*/
+  75              USB_ENDPOINT_DESCSIZE,          //bLength
+  76              USB_ENDPOINT_DESCRIPTOR,       //bDescriptorType
+  77              0x82,       //bEndpointAddress
+  78              0x03,       //bmAttributes (interrupt transfer)
+  79              0x40,       //wMaxPacketSize (64)
+  80              0x00,       //wMaxPacketSize (64)
+  81              4,          //bInterval
+  82          
+  83              /*Interface Descriptor (1.0) Class Vendor Specific*/
+  84              USB_INTERFACE_DESCSIZE,          //bLength
+  85              USB_INTERFACE_DESCRIPTOR,       //bDescriptorType
+  86              1,          //bInterfaceNumber
+  87              0,          //bAlternateSetting
+  88              0,          //bNumEndpoints
+  89              0xFF,       //bInterfaceClass
+  90              0x47,       //bInterfaceSubClass
+  91              0xD0,       //bInterfaceProtocol
+  92              0,          //iInterface
+  93          
+  94              /*Interface Descriptor (1.1) Class Vendor Specific*/
+  95              USB_INTERFACE_DESCSIZE,          //bLength
+  96              USB_INTERFACE_DESCRIPTOR,       //bDescriptorType
+  97              1,          //bInterfaceNumber
+  98              1,          //bAlternateSetting
+  99              2,          //bNumEndpoints
+ 100              0xFF,       //bInterfaceClass
+ 101              0x47,       //bInterfaceSubClass
+ 102              0xD0,       //bInterfaceProtocol
+ 103              0,          //iInterface
+ 104          
+ 105              /*Endpoint Descriptor*/
+ 106              USB_ENDPOINT_DESCSIZE,          //bLength
+ 107              USB_ENDPOINT_DESCRIPTOR,       //bDescriptorType
+ 108              0x03,       //bEndpointAddress
+ 109              0x01,       //bmAttributes (isochronous transfer)
+C51 COMPILER V9.60.0.0   XI_DESCRIPTORS                                                    09/15/2022 21:04:23 PAGE 3   
+
+ 110              0x40,       //wMaxPacketSize (64)
+ 111              0x00,       //wMaxPacketSize (64)
+ 112              1,          //bInterval
+ 113          
+ 114              /*Endpoint Descriptor*/
+ 115              USB_ENDPOINT_DESCSIZE,          //bLength
+ 116              USB_ENDPOINT_DESCRIPTOR,       //bDescriptorType
+ 117              0x83,       //bEndpointAddress
+ 118              0x01,       //bmAttributes (isochronous transfer)
+ 119              0x40,       //wMaxPacketSize (64)
+ 120              0x00,       //wMaxPacketSize (64)
+ 121              1,          //bInterval
+ 122          };
+ 123          
+ 124          
+ 125          SI_SEGMENT_VARIABLE_SEGMENT_POINTER(xi_UsbStringTable_USEnglish[], static const USB_StringDescriptor_TypeD
+             -ef, SI_SEG_GENERIC, const SI_SEG_CODE) =
+ 126          {
+ 127            (SI_VARIABLE_SEGMENT_POINTER(, uint8_t, SI_SEG_CODE))langDesc,
+ 128            mfrDesc,
+ 129            xi_prodDesc,
+ 130            serDesc
+ 131          
+ 132          };
+ 133          
+ 134          // Xbox One USB Initialization Struct
+ 135          SI_SEGMENT_VARIABLE(xi_initstruct,
+ 137                              const USBD_Init_TypeDef,
+ 137                              SI_SEG_CODE) =
+ 138          {
+ 139            (SI_VARIABLE_SEGMENT_POINTER(, USB_DeviceDescriptor_TypeDef, SI_SEG_GENERIC))xi_deviceDesc,             
+             - // deviceDescriptor
+ 140            (SI_VARIABLE_SEGMENT_POINTER(, USB_ConfigurationDescriptor_TypeDef, SI_SEG_GENERIC))xi_configDesc,      
+             - // configDescriptor
+ 141            (SI_VARIABLE_SEGMENT_POINTER(, USB_StringTable_TypeDef, SI_SEG_GENERIC))xi_UsbStringTable_USEnglish,   /
+             -/ stringDescriptors
+ 142            sizeof(xi_UsbStringTable_USEnglish) / sizeof(xi_UsbStringTable_USEnglish[0])                            
+             -// numberOfStrings
+ 143          };
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =    157    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

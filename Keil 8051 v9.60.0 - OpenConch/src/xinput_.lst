@@ -1,0 +1,112 @@
+C51 COMPILER V9.60.0.0   XINPUT_                                                           12/14/2022 01:42:55 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE XINPUT_
+OBJECT MODULE PLACED IN .\src\xinput_.OBJ
+COMPILER INVOKED BY: C:\SiliconLabs\SimplicityStudio\v5\developer\toolchains\keil_8051\9.60\BIN\C51.exe C:\Users\Mitch\S
+                    -implicityStudio\v5_workspace\HOJA-USB-EFM8UB1\src\xinput_.c OMF2 LARGE ROM(LARGE) WARNINGLEVEL(2) FLOATFUZZY(3) OPTIMIZE
+                    -(9,SIZE) DEFINE(NDEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-EFM8
+                    -UB1\inc;C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-EFM8UB1\inc\config;C:/SiliconLabs/SimplicityStudio/v5/deve
+                    -loper/sdks/8051/v4.2.4//Lib/efm8_assert;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_usb/inc;
+                    -C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/peripheral_driver/inc;C:/SiliconLabs/Simpl
+                    -icityStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_usbc/lib_kernel/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdk
+                    -s/8051/v4.2.4//Lib/efm8_usbc/lib_usbc_pd/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/share
+                    -d/si8051Base;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/inc) REGFILE(HOJA-USB-EFM8UB1
+                    -.ORC) PRINT(.\src\xinput_.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OA OBJECT(.\src\xinput_.OBJ)
+
+line level    source
+
+   1          /*
+   2           * xinput.c
+   3           *
+   4           *  Created on: Sep 10, 2022
+   5           *      Author: Mitch
+   6           */
+   7          
+   8          #include "xinput_.h"
+*** WARNING C318 IN LINE 11 OF C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/peripheral_
+             -driver/inc\smb_0.h: can't open file 'efm8_config.h'
+   9          
+  10          xinput_input_s xinput_reportBuffer = {0};
+  11          
+  12          void xinputUpdateReport()
+  13          {
+  14   1        uint8_t lr = 1;
+  15   1        uint8_t ud = 1;
+  16   1      
+  17   1        xinput_reportBuffer.report_id = 0x01;
+  18   1      
+  19   1        // Set all the right bits
+  20   1        xinput_reportBuffer.buttons_1.button_b    = i2c_input_buffer.buttons_1.button_right;
+  21   1        xinput_reportBuffer.buttons_1.button_a    = i2c_input_buffer.buttons_1.button_down;
+  22   1        xinput_reportBuffer.buttons_1.button_y    = i2c_input_buffer.buttons_1.button_up;
+  23   1        xinput_reportBuffer.buttons_1.button_x    = i2c_input_buffer.buttons_1.button_left;
+  24   1      
+  25   1        xinput_reportBuffer.buttons_1.bumper_l   = i2c_input_buffer.buttons_2.trigger_l;
+  26   1        xinput_reportBuffer.buttons_1.bumper_r   = i2c_input_buffer.buttons_2.trigger_r;
+  27   1      
+  28   1        if (i2c_input_buffer.buttons_2.trigger_zl)
+  29   1        {
+  30   2            xinput_reportBuffer.analog_trigger_l = (255 << 2);
+  31   2        }
+  32   1        else
+  33   1        {
+  34   2            xinput_reportBuffer.analog_trigger_l = (i2c_input_buffer.lt_a << 2);
+  35   2        }
+  36   1      
+  37   1        if (i2c_input_buffer.buttons_2.trigger_zr)
+  38   1        {
+  39   2            xinput_reportBuffer.analog_trigger_r = (255 << 2);
+  40   2        }
+  41   1        else
+  42   1        {
+  43   2            xinput_reportBuffer.analog_trigger_r = (i2c_input_buffer.rt_a << 2);
+  44   2        }
+  45   1      
+C51 COMPILER V9.60.0.0   XINPUT_                                                           12/14/2022 01:42:55 PAGE 2   
+
+  46   1        xinput_reportBuffer.buttons_1.button_menu     = i2c_input_buffer.buttons_2.button_start;
+  47   1        xinput_reportBuffer.buttons_1.button_back     = i2c_input_buffer.buttons_2.button_select;
+  48   1      
+  49   1        xinput_reportBuffer.buttons_2.button_stick_left = i2c_input_buffer.buttons_2.button_stick_left;
+  50   1        xinput_reportBuffer.buttons_2.button_stick_right = i2c_input_buffer.buttons_2.button_stick_right;
+  51   1      
+  52   1        xinput_reportBuffer.stick_left_x    = (i2c_input_buffer.ls_x);
+  53   1        xinput_reportBuffer.stick_left_y    = (i2c_input_buffer.ls_y);
+  54   1        xinput_reportBuffer.stick_right_x    = (i2c_input_buffer.rs_x);
+  55   1        xinput_reportBuffer.stick_right_y    = (i2c_input_buffer.rs_y);
+  56   1      
+  57   1        lr = 1 - i2c_input_buffer.buttons_1.dpad_left + i2c_input_buffer.buttons_1.dpad_right;
+  58   1        ud = 1 - i2c_input_buffer.buttons_1.dpad_down + i2c_input_buffer.buttons_1.dpad_up;
+  59   1      
+  60   1        xinput_reportBuffer.dpad.dpad_hat    = (uint8_t) getHatDir(DPAD_TYPE_XINPUT, lr, ud);
+  61   1      
+  62   1        if (sendReport)
+  63   1        {
+  64   2            sendReport = false;
+  65   2            USBD_Write(EP1IN,
+  66   2               (uint8_t *) &xinput_reportBuffer,
+  67   2               XI_INPUT_SIZE,
+  68   2               true);
+  69   2        }
+  70   1      
+  71   1      }
+  72          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    398    ----
+   CONSTANT SIZE    =     29    ----
+   XDATA SIZE       =     16    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

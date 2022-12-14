@@ -1,0 +1,207 @@
+C51 COMPILER V9.60.0.0   NS_DESCRIPTORS                                                    09/15/2022 21:04:22 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE NS_DESCRIPTORS
+OBJECT MODULE PLACED IN .\src\ns_descriptors.OBJ
+COMPILER INVOKED BY: C:\SiliconLabs\SimplicityStudio\v5\developer\toolchains\keil_8051\9.60\BIN\C51.exe C:\Users\Mitch\S
+                    -implicityStudio\v5_workspace\HOJA-USB-EFM8UB1\src\ns_descriptors.c OMF2 SMALL DEBUG OBJECTEXTEND ROM(LARGE) WARNINGLEVEL
+                    -(2) FLOATFUZZY(3) OPTIMIZE(9,SPEED) DEFINE(NDEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\Mitch\SimplicityStudio
+                    -\v5_workspace\HOJA-USB-EFM8UB1\inc;C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-EFM8UB1\inc\config;C:/SiliconLa
+                    -bs/SimplicityStudio/v5/developer/sdks/8051/v4.2.3//Lib/efm8_assert;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/805
+                    -1/v4.2.3//Lib/efm8_usb/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.3//Device/EFM8UB1/peripheral_driv
+                    -er/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.3//Lib/efm8_usbc/lib_kernel/inc;C:/SiliconLabs/Simpli
+                    -cityStudio/v5/developer/sdks/8051/v4.2.3//Lib/efm8_usbc/lib_usbc_pd/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdk
+                    -s/8051/v4.2.3//Device/shared/si8051Base;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.3//Device/EFM8UB1/in
+                    -c) REGFILE(HOJA-USB-EFM8UB1.ORC) PRINT(.\src\ns_descriptors.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OA OBJECT(.\src\ns_d
+                    -escriptors.OBJ)
+
+line level    source
+
+   1          /*
+   2           * ns_descriptors.c
+   3           *
+   4           *  Created on: Sep 12, 2022
+   5           *      Author: Mitch
+   6           */
+   7          
+   8          #include <si_toolchain.h>
+   9          #include <endian.h>
+  10          #include <stdlib.h>
+  11          #include <string.h>
+  12          #include <efm8_usb.h>
+  13          #include "descriptors.h"
+  14          
+  15          UTF16LE_PACKED_STATIC_CONST_STRING_DESC( ns_prodDesc[], NS_PROD_STRING, NS_PROD_SIZE);
+  16          
+  17          // HID Report Descriptor for Interface 0 Nintendo Switch
+  18          SI_SEGMENT_VARIABLE(ns_HIDDescriptor[NS_HID_SIZE],
+  20                              const uint8_t,
+  20                              SI_SEG_CODE) =
+  21          {
+  22              0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+  23              0x09, 0x05,        // Usage (Game Pad)
+  24              0xA1, 0x01,        // Collection (Application)
+  25              0x15, 0x00,        //   Logical Minimum (0)
+  26              0x25, 0x01,        //   Logical Maximum (1)
+  27              0x35, 0x00,        //   Physical Minimum (0)
+  28              0x45, 0x01,        //   Physical Maximum (1)
+  29              0x75, 0x01,        //   Report Size (1)
+  30              0x95, 0x0E,        //   Report Count (14)
+  31              0x05, 0x09,        //   Usage Page (Button)
+  32              0x19, 0x01,        //   Usage Minimum (0x01)
+  33              0x29, 0x0E,        //   Usage Maximum (0x0E)
+  34              0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  35              0x95, 0x02,        //   Report Count (2)
+  36              0x81, 0x01,        //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  37              0x05, 0x01,        //   Usage Page (Generic Desktop Ctrls)
+  38              0x25, 0x07,        //   Logical Maximum (7)
+  39              0x46, 0x3B, 0x01,  //   Physical Maximum (315)
+  40              0x75, 0x04,        //   Report Size (4)
+  41              0x95, 0x01,        //   Report Count (1)
+  42              0x65, 0x14,        //   Unit (System: English Rotation, Length: Centimeter)
+  43              0x09, 0x39,        //   Usage (Hat switch)
+  44              0x81, 0x42,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,Null State)
+  45              0x65, 0x00,        //   Unit (None)
+  46              0x95, 0x01,        //   Report Count (1)
+C51 COMPILER V9.60.0.0   NS_DESCRIPTORS                                                    09/15/2022 21:04:22 PAGE 2   
+
+  47              0x81, 0x01,        //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  48              0x26, 0xFF, 0x00,  //   Logical Maximum (255)
+  49              0x46, 0xFF, 0x00,  //   Physical Maximum (255)
+  50              0x09, 0x30,        //   Usage (X)
+  51              0x09, 0x31,        //   Usage (Y)
+  52              0x09, 0x32,        //   Usage (Z)
+  53              0x09, 0x35,        //   Usage (Rz)
+  54              0x75, 0x08,        //   Report Size (8)
+  55              0x95, 0x04,        //   Report Count (4)
+  56              0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  57              0x75, 0x08,        //   Report Size (8)
+  58              0x95, 0x01,        //   Report Count (1)
+  59              0x81, 0x01,        //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  60              0x05, 0x0C,        //   Usage Page (Consumer)
+  61              0x09, 0x00,        //   Usage (Unassigned)
+  62              0x15, 0x80,        //   Logical Minimum (-128)
+  63              0x25, 0x7F,        //   Logical Maximum (127)
+  64              0x75, 0x08,        //   Report Size (8)
+  65              0x95, 0x40,        //   Report Count (64)
+  66              0xB1, 0x02,        //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-vola
+             -tile)
+  67              0xC0,              // End Collection
+  68          };
+  69          
+  70          // Nintendo Switch Device Description
+  71          SI_SEGMENT_VARIABLE(ns_deviceDesc[],
+  73                              const USB_DeviceDescriptor_TypeDef,
+  73                              SI_SEG_CODE) =
+  74          {
+  75            USB_DEVICE_DESCSIZE,             // bLength
+  76            USB_DEVICE_DESCRIPTOR,           // bLength
+  77            htole16(0x0110),                 // bcdUSB
+  78            0,                               // bDeviceClass
+  79            0,                               // bDeviceSubClass
+  80            0,                               // bDeviceProtocol
+  81            64,                              // bMaxPacketSize
+  82            NS_VENDOR_ID,                   // idVendor
+  83            NS_PROD_ID,                  // idProduct
+  84            htole16(0x0100),                 // bcdDevice
+  85            1,                               // iManufacturer
+  86            2,                               // iProduct
+  87            0,                               // iSerialNumber
+  88            1,                               // bNumConfigurations
+  89          };
+  90          
+  91          // Nintendo Switch Config Description
+  92          SI_SEGMENT_VARIABLE(ns_configDesc[],
+  94                              const uint8_t,
+  94                              SI_SEG_CODE) =
+  95          {
+  96            USB_CONFIG_DESCSIZE,             // bLength
+  97            USB_CONFIG_DESCRIPTOR,           // bLength
+  98            0x22,                            // wTotalLength(LSB)
+  99            0x00,                            // wTotalLength(MSB)
+ 100            1,                               // bNumInterfaces
+ 101            1,                               // bConfigurationValue
+ 102            0,                               // iConfiguration
+ 103          
+ 104            CONFIG_DESC_BM_RESERVED_D7,     // bmAttrib: usb powered,
+ 105          
+ 106            CONFIG_DESC_MAXPOWER_mA(500),    // bMaxPower: 500 mA
+ 107          
+ 108            //Interface 0 Descriptor
+C51 COMPILER V9.60.0.0   NS_DESCRIPTORS                                                    09/15/2022 21:04:22 PAGE 3   
+
+ 109            USB_INTERFACE_DESCSIZE,          // bLength
+ 110            USB_INTERFACE_DESCRIPTOR,        // bDescriptorType
+ 111            0,                               // bInterfaceNumber
+ 112            0,                               // bAlternateSetting
+ 113            1,                               // bNumEndpoints
+ 114            3,                               // bInterfaceClass: HID (Human Interface Device)
+ 115            0,                               // bInterfaceSubClass
+ 116            0,                               // bInterfaceProtocol
+ 117            0,                               // iInterface
+ 118          
+ 119            //HID Descriptor
+ 120            USB_HID_DESCSIZE,                // bLength
+ 121            USB_HID_DESCRIPTOR,              // bLength
+ 122            0x11,                            // bcdHID (LSB)
+ 123            0x01,                            // bcdHID (MSB)
+ 124            0,                               // bCountryCode
+ 125            1,                               // bNumDescriptors
+ 126            USB_HID_REPORT_DESCRIPTOR,       // bDescriptorType
+ 127            sizeof( ns_HIDDescriptor ),     // wDescriptorLength(LSB)
+ 128            sizeof( ns_HIDDescriptor ) >> 8,    // wDescriptorLength(MSB)
+ 129          
+ 130            //Endpoint 1 IN Descriptor
+ 131            USB_ENDPOINT_DESCSIZE,           // bLength
+ 132            USB_ENDPOINT_DESCRIPTOR,         // bDescriptorType
+ 133            0x81,                            // bEndpointAddress
+ 134            USB_EPTYPE_INTR,                 // bAttrib
+ 135            0x40,                            // wMaxPacketSize (LSB)
+ 136            0x00,                            // wMaxPacketSize (MSB)
+ 137            0x04,                            // bInterval
+ 138          };
+ 139          
+ 140          SI_SEGMENT_VARIABLE_SEGMENT_POINTER(ns_UsbStringTable_USEnglish[], static const USB_StringDescriptor_TypeD
+             -ef, SI_SEG_GENERIC, const SI_SEG_CODE) =
+ 141          {
+ 142            (SI_VARIABLE_SEGMENT_POINTER(, uint8_t, SI_SEG_CODE))langDesc,
+ 143            mfrDesc,
+ 144            ns_prodDesc,
+ 145            serDesc
+ 146          
+ 147          };
+ 148          
+ 149          // Nintendo Switch initialization Struct
+ 150          SI_SEGMENT_VARIABLE(ns_initstruct,
+ 152                              const USBD_Init_TypeDef,
+ 152                              SI_SEG_CODE) =
+ 153          {
+ 154            (SI_VARIABLE_SEGMENT_POINTER(, USB_DeviceDescriptor_TypeDef, SI_SEG_GENERIC))ns_deviceDesc,             
+             - // deviceDescriptor
+ 155            (SI_VARIABLE_SEGMENT_POINTER(, USB_ConfigurationDescriptor_TypeDef, SI_SEG_GENERIC))ns_configDesc,      
+             - // configDescriptor
+ 156            (SI_VARIABLE_SEGMENT_POINTER(, USB_StringTable_TypeDef, SI_SEG_GENERIC))ns_UsbStringTable_USEnglish,   /
+             -/ stringDescriptors
+ 157            sizeof(ns_UsbStringTable_USEnglish) / sizeof(ns_UsbStringTable_USEnglish[0])                            
+             -// numberOfStrings
+ 158          };
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =    221    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+C51 COMPILER V9.60.0.0   NS_DESCRIPTORS                                                    09/15/2022 21:04:22 PAGE 4   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

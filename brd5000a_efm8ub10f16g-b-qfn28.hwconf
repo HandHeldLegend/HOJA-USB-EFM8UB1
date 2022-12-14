@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="ASCII"?>
+<device:XMLDevice xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:device="http://www.silabs.com/ss/hwconfig/document/device.ecore" name="EFM8UB10F16G-B-QFN28" partId="mcu.8051.efm8.ub1.efm8ub10f16g-b-qfn28" version="4.0.0" contextId="%DEFAULT%">
+  <mode name="DefaultMode">
+    <property object="CIP51_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="CLOCK_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="CLOCK_0" propertyId="clock.clockselect.clocksourcedivider" value="SYSCLK / 1"/>
+    <property object="DefaultMode" propertyId="mode.diagramLocation" value="100, 100"/>
+    <property object="HFOSC_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="I2CSLAVE_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="I2CSLAVE_0" propertyId="i2cslave.control.enablei2c" value="Enabled"/>
+    <property object="I2CSLAVE_0" propertyId="i2cslave.control.enablepinmode" value="I2C mode"/>
+    <property object="I2CSLAVE_0" propertyId="i2cslave.control.enablescllowtimeout" value="Enabled"/>
+    <property object="I2CSLAVE_0" propertyId="i2cslave.slaveaddress.i2chardwareslaveaddress" value="69"/>
+    <property object="INTERRUPT_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="INTERRUPT_0" propertyId="interrupt.extendedinterruptenable1.enablesmbussmb0interrupt" value="Enabled"/>
+    <property object="INTERRUPT_0" propertyId="interrupt.extendedinterruptenable2.enablei2c0slaveinterrupt" value="Enabled"/>
+    <property object="INTERRUPT_0" propertyId="interrupt.extendedinterruptenable2.enableusbusb0interrupt" value="Enabled"/>
+    <property object="INTERRUPT_0" propertyId="interrupt.interruptenable.enableallinterrupts" value="Enabled"/>
+    <property object="INTERRUPT_0" propertyId="interruptenables.codegenerationoptions.generateinterruptfunctions" value="Disabled"/>
+    <property object="LFOSC_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="LFOSC_0" propertyId="lfosc.lowfrequencyoscillatorcontrol.enableinternallfoscillator" value="Enabled"/>
+    <property object="P0.0" propertyId="ports.settings.iomode" value="Digital Push-Pull Output"/>
+    <property object="P0.0" propertyId="ports.settings.latch" value="Low"/>
+    <property object="P0.0" propertyId="ports.settings.outputmode" value="Push-pull"/>
+    <property object="P1.4" propertyId="ports.settings.label" value="RGB0"/>
+    <property object="PBCFG_0" propertyId="pbcfg.settings.enablecrossbar" value="Enabled"/>
+    <property object="SMBUS_0" propertyId="smbus.configuration.enablesmbus" value="Enabled"/>
+    <property object="SMBUS_0" propertyId="smbus.fifocontrol0.enablereadrequestinterrupt" value="Enabled"/>
+    <property object="SMBUS_0" propertyId="smbus.fifocontrol0.enablewriterequestinterrupt" value="Enabled"/>
+    <property object="SMBUS_0" propertyId="smbus.slaveaddress.smbushardwareslaveaddress" value="69"/>
+    <property object="SMBUS_0" propertyId="smbus.slaveaddressmask.enablehardwareacknowledge" value="Enabled"/>
+    <property object="SMBUS_0" propertyId="smbus.view.view" value="Advanced"/>
+    <property object="TIMER01_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="TIMER16_2" propertyId="ABPeripheral.included" value="true"/>
+    <property object="TIMER16_3" propertyId="ABPeripheral.included" value="true"/>
+    <property object="TIMER16_4" propertyId="ABPeripheral.included" value="true"/>
+    <property object="TIMER_SETUP_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="USBLIB_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="USBLIB_0" propertyId="configuration.configurationparameters.devicepower" value="Bus-Powered"/>
+    <property object="USBLIB_0" propertyId="configuration.configurationparameters.maxpowerfromhostma" value="500"/>
+    <property object="USBLIB_0" propertyId="configuration.configurationparameters.remotewakeup" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="device.deviceproperties.bmaxpacketsize" value="64"/>
+    <property object="USBLIB_0" propertyId="device.deviceproperties.productidpid" value="746"/>
+    <property object="USBLIB_0" propertyId="device.deviceproperties.productstring" value="JoyPad"/>
+    <property object="USBLIB_0" propertyId="device.deviceproperties.serialnumberstring" value="2011"/>
+    <property object="USBLIB_0" propertyId="device.deviceproperties.vendoridvid" value="1118"/>
+    <property object="USBLIB_0" propertyId="device.deviceproperties.vendorstring" value="Hand Held Legend"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint1in.endpoint1in" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint1in.maxpacketsizebytes" value="64"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint1in.pollingintervalms" value="8"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint1in.transfertype" value="Interrupt"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint1out.endpoint1out" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint1out.maxpacketsizebytes" value="64"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint1out.transfertype" value="Interrupt"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint2in.bulkmaxpacketsizebytes" value="64"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint2in.endpoint2in" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint2in.maxpacketsizebytes" value="64"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint2in.pollingintervalms" value="4"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint2out.bulkmaxpacketsizebytes" value="64"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint2out.endpoint2out" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint2out.maxpacketsizebytes" value="64"/>
+    <property object="USBLIB_0" propertyId="endpoints.endpoint2out.pollingintervalms" value="4"/>
+    <property object="USBLIB_0" propertyId="interfaces.interface0.hidpollingintervalms" value="8"/>
+    <property object="USBLIB_0" propertyId="interfaces.interface0.hidreportdescriptor" value="&#xA;  0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)&#xA;  0x09, 0x05,                    // USAGE (Game Pad)&#xA;  0xa1, 0x01,                    // COLLECTION (Application)&#xA;  0x09, 0x01,                    //   USAGE (Pointer)&#xA;  0xa1, 0x00,                    //   COLLECTION (Physical)&#xA;  0x05, 0x09,                    //     USAGE_PAGE (Button)&#xA;  0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)&#xA;  0x29, 0x03,                    //     USAGE_MAXIMUM (Button 3)&#xA;  0x15, 0x00,                    //     LOGICAL_MINIMUM (0)&#xA;  0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)&#xA;  0x95, 0x03,                    //     REPORT_COUNT (3)&#xA;  0x75, 0x01,                    //     REPORT_SIZE (1)&#xA;  0x81, 0x02,                    //     INPUT (Data,Var,Abs)&#xA;  0x95, 0x01,                    //     REPORT_COUNT (1)&#xA;  0x75, 0x05,                    //     REPORT_SIZE (5)&#xA;  0x81, 0x03,                    //     INPUT (Cnst,Var,Abs) Padding&#xA;  0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)&#xA;  0x09, 0x30,                    //     USAGE (X)&#xA;  0x09, 0x31,                    //     USAGE (Y)&#xA;  0x15, 0xff,                    //     LOGICAL_MINIMUM (-1)&#xA;  0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)&#xA;  0x95, 0x02,                    //     REPORT_COUNT (2)&#xA;  0x75, 0x08,                    //     REPORT_SIZE (8)&#xA;  0x81, 0x02,                    //     INPUT (Data,Var,Abs)&#xA;  0xc0,                          //   END_COLLECTION&#xA;  0xc0                           // END_COLLECTION&#xA;"/>
+    <property object="USBLIB_0" propertyId="interfaces.interface0.hidreporttemplate" value="Joystick"/>
+    <property object="USBLIB_0" propertyId="interfaces.interface0.interfacestring" value=""/>
+    <property object="USBLIB_0" propertyId="interfaces.interface0.interfacesubclass" value="71"/>
+    <property object="USBLIB_0" propertyId="interfaces.interface0.protocol" value="208"/>
+    <property object="USBLIB_0" propertyId="interfaces.interface1.interfacestring" value="XInput"/>
+    <property object="USBLIB_0" propertyId="interfaces.interface1.interfacesubclass" value="71"/>
+    <property object="USBLIB_0" propertyId="interfaces.interface1.protocol" value="208"/>
+    <property object="USBLIB_0" propertyId="interfaces.interfaceparameters.numberofinterfaces" value="2"/>
+    <property object="USBLIB_0" propertyId="library.callbackfunctions.handlercallback" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="library.callbackfunctions.resetcallback" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="library.callbackfunctions.selfpoweredcallback" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="library.callbackfunctions.setupcommandcallback" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="library.callbackfunctions.startofframecallback" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="library.callbackfunctions.statechangecallback" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="library.libraryconfiguration.clockrecovery" value="Enabled"/>
+    <property object="USBLIB_0" propertyId="library.powersavingmode.powersavemode" value="( USB_PWRSAVE_MODE_OFF )"/>
+    <property object="VREF_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="VREF_0" propertyId="vref.hidden.voltagereferenceselect" value="VDD pin"/>
+    <property object="VREF_0" propertyId="vref.voltagereferencecontrol.selectvoltagereference" value="Unregulated VDD"/>
+    <property object="VREG_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="VREG_0" propertyId="vreg.5vto33vldoregulatorldo1.enableregulator" value="Disable Regulator"/>
+    <property object="VREG_0" propertyId="vreg.5vto33vldoregulatorldo1.regulatorbias" value="Disabled (Lowest power consumption)"/>
+    <property object="VREG_0" propertyId="vreg.coreldoregulatorldo0.stopmodeconfiguration" value="Regulator shut down in stop mode"/>
+    <property object="WDT_0" propertyId="ABPeripheral.included" value="true"/>
+    <property object="WDT_0" propertyId="wdt.watchdogcontrol.wdtenable" value="Disable"/>
+  </mode>
+  <modeTransition>
+    <property object="RESET &#x2192; DefaultMode" propertyId="modeTransition.source" value="RESET"/>
+    <property object="RESET &#x2192; DefaultMode" propertyId="modeTransition.target" value="DefaultMode"/>
+  </modeTransition>
+</device:XMLDevice>

@@ -1,0 +1,342 @@
+C51 COMPILER V9.60.0.0   XINPUT_DESC                                                       12/14/2022 01:42:56 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE XINPUT_DESC
+OBJECT MODULE PLACED IN .\src\xinput_desc.OBJ
+COMPILER INVOKED BY: C:\SiliconLabs\SimplicityStudio\v5\developer\toolchains\keil_8051\9.60\BIN\C51.exe C:\Users\Mitch\S
+                    -implicityStudio\v5_workspace\HOJA-USB-EFM8UB1\src\xinput_desc.c OMF2 LARGE ROM(LARGE) WARNINGLEVEL(2) FLOATFUZZY(3) OPTI
+                    -MIZE(9,SIZE) DEFINE(NDEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-
+                    -EFM8UB1\inc;C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-EFM8UB1\inc\config;C:/SiliconLabs/SimplicityStudio/v5/
+                    -developer/sdks/8051/v4.2.4//Lib/efm8_assert;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_usb/
+                    -inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/peripheral_driver/inc;C:/SiliconLabs/S
+                    -implicityStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_usbc/lib_kernel/inc;C:/SiliconLabs/SimplicityStudio/v5/developer
+                    -/sdks/8051/v4.2.4//Lib/efm8_usbc/lib_usbc_pd/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/s
+                    -hared/si8051Base;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/inc) REGFILE(HOJA-USB-EFM
+                    -8UB1.ORC) PRINT(.\src\xinput_desc.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OA OBJECT(.\src\xinput_desc.OBJ)
+
+line level    source
+
+   1          /*
+   2           * xinput_desc.c
+   3           *
+   4           *  Created on: Dec 13, 2022
+   5           *      Author: Mitch
+   6           */
+   7          
+   8          
+   9          #include "xinput_desc.h"
+*** WARNING C318 IN LINE 11 OF C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/peripheral_
+             -driver/inc\smb_0.h: can't open file 'efm8_config.h'
+  10          
+  11          UTF16LE_PACKED_STATIC_CONST_STRING_DESC( xinput_prod_descriptor[], XINPUT_PROD_STRING, XINPUT_PROD_SIZE);
+  12          
+  13          // XinputHID descriptor
+  14          extern SI_SEGMENT_VARIABLE(xinput_hid_descriptor[XINPUT_HID_SIZE],
+  16                              const uint8_t,
+  16                              SI_SEG_CODE) =
+  17          {
+  18                  0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+  19                  0x09, 0x05,        // Usage (Game Pad)
+  20                  0xA1, 0x01,        // Collection (Application)
+  21          
+  22                  // Byte 0
+  23                  0x85, 0x01,        //   Report ID (1)
+  24          
+  25                  // Bytes 1, 2, 3, 4 for left stick X and Y
+  26                  0x09, 0x01,        //   Usage (Pointer)
+  27                  0xA1, 0x00,        //   Collection (Physical)
+  28                  0x09, 0x30,        //     Usage (X)
+  29                  0x09, 0x31,        //     Usage (Y)
+  30                  0x15, 0x00,        //     Logical Minimum (0)
+  31                  0x27, 0xFF, 0xFF, 0x00, 0x00,  //     Logical Maximum (65534)
+  32                  0x95, 0x02,        //     Report Count (2)
+  33                  0x75, 0x10,        //     Report Size (16)
+  34                  0x81, 0x02,        //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  35                  0xC0,              //   End Collection
+  36          
+  37                  // Bytes 4, 5, 6, 7 for right stick X and Y
+  38                  0x09, 0x01,        //   Usage (Pointer)
+  39                  0xA1, 0x00,        //   Collection (Physical)
+  40                  0x09, 0x33,        //     Usage (Rx)
+  41                  0x09, 0x34,        //     Usage (Ry)
+  42                  0x15, 0x00,        //     Logical Minimum (0)
+  43                  0x27, 0xFF, 0xFF, 0x00, 0x00,  //     Logical Maximum (65534)
+  44                  0x95, 0x02,        //     Report Count (2)
+  45                  0x75, 0x10,        //     Report Size (16)
+C51 COMPILER V9.60.0.0   XINPUT_DESC                                                       12/14/2022 01:42:56 PAGE 2   
+
+  46                  0x81, 0x02,        //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  47                  0xC0,              //   End Collection
+  48          
+  49                  // Bytes 8, 9 for left analog trigger
+  50                  0x05, 0x01,        //   Usage Page (Generic Desktop Ctrls)
+  51                  0x09, 0x32,        //   Usage (Z)
+  52                  0x15, 0x00,        //   Logical Minimum (0)
+  53                  0x26, 0xFF, 0x03,  //   Logical Maximum (1023)
+  54                  0x95, 0x01,        //   Report Count (1)
+  55                  0x75, 0x0A,        //   Report Size (10)
+  56                  0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  57                  0x15, 0x00,        //   Logical Minimum (0)
+  58                  0x25, 0x00,        //   Logical Maximum (0)
+  59                  0x75, 0x06,        //   Report Size (6)
+  60                  0x95, 0x01,        //   Report Count (1)
+  61                  0x81, 0x03,        //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  62          
+  63                  // Bytes 10, 11 for right analog trigger
+  64                  0x05, 0x01,        //   Usage Page (Generic Desktop Ctrls)
+  65                  0x09, 0x35,        //   Usage (Rz)
+  66                  0x15, 0x00,        //   Logical Minimum (0)
+  67                  0x26, 0xFF, 0x03,  //   Logical Maximum (1023)
+  68                  0x95, 0x01,        //   Report Count (1)
+  69                  0x75, 0x0A,        //   Report Size (10)
+  70                  0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  71                  0x15, 0x00,        //   Logical Minimum (0)
+  72                  0x25, 0x00,        //   Logical Maximum (0)
+  73                  0x75, 0x06,        //   Report Size (6)
+  74                  0x95, 0x01,        //   Report Count (1)
+  75                  0x81, 0x03,        //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  76          
+  77                  // Byte 12 for Hat switch for dpad
+  78                  0x05, 0x01,        //   Usage Page (Generic Desktop Ctrls)
+  79                  0x09, 0x39,        //   Usage (Hat switch)
+  80                  0x15, 0x01,        //   Logical Minimum (1)
+  81                  0x25, 0x08,        //   Logical Maximum (8)
+  82                  0x35, 0x00,        //   Physical Minimum (0)
+  83                  0x46, 0x3B, 0x01,  //   Physical Maximum (315)
+  84                  0x66, 0x14, 0x00,  //   Unit (System: English Rotation, Length: Centimeter)
+  85                  0x75, 0x04,        //   Report Size (4)
+  86                  0x95, 0x01,        //   Report Count (1)
+  87                  0x81, 0x03,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,Null State)
+  88                  0x75, 0x04,        //   Report Size (4)
+  89                  0x95, 0x01,        //   Report Count (1)
+  90                  0x15, 0x00,        //   Logical Minimum (0)
+  91                  0x25, 0x00,        //   Logical Maximum (0)
+  92                  0x35, 0x00,        //   Physical Minimum (0)
+  93                  0x45, 0x00,        //   Physical Maximum (0)
+  94                  0x65, 0x00,        //   Unit (None)
+  95                  0x81, 0x03,        //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  96          
+  97                  // Bytes 13 and 14 for buttons_1
+  98                  0x05, 0x09,        //   Usage Page (Button)
+  99                  0x19, 0x01,        //   Usage Minimum (0x01)
+ 100                  0x29, 0x0A,        //   Usage Maximum (0x0A)
+ 101                  0x15, 0x00,        //   Logical Minimum (0)
+ 102                  0x25, 0x01,        //   Logical Maximum (1)
+ 103                  0x75, 0x01,        //   Report Size (1)
+ 104                  0x95, 0x0A,        //   Report Count (10)
+ 105                  0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+ 106                  0x15, 0x00,        //   Logical Minimum (0)
+ 107                  0x25, 0x00,        //   Logical Maximum (0)
+ 108                  0x75, 0x06,        //   Report Size (6)
+C51 COMPILER V9.60.0.0   XINPUT_DESC                                                       12/14/2022 01:42:56 PAGE 3   
+
+ 109                  0x95, 0x01,        //   Report Count (1)
+ 110                  0x81, 0x03,        //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+ 111          
+ 112                  0x05, 0x01,        //   Usage Page (Generic Desktop Ctrls)
+ 113                  0x09, 0x80,        //   Usage (Sys Control)
+ 114                  0x85, 0x02,        //   Report ID (2)
+ 115                  0xA1, 0x00,        //   Collection (Physical)
+ 116                  0x09, 0x85,        //     Usage (Sys Main Menu)
+ 117                  0x15, 0x00,        //     Logical Minimum (0)
+ 118                  0x25, 0x01,        //     Logical Maximum (1)
+ 119                  0x95, 0x01,        //     Report Count (1)
+ 120                  0x75, 0x01,        //     Report Size (1)
+ 121                  0x81, 0x02,        //     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+ 122                  0x15, 0x00,        //     Logical Minimum (0)
+ 123                  0x25, 0x00,        //     Logical Maximum (0)
+ 124                  0x75, 0x07,        //     Report Size (7)
+ 125                  0x95, 0x01,        //     Report Count (1)
+ 126                  0x81, 0x03,        //     Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+ 127                  0xC0,              //   End Collection
+ 128          
+ 129                  0x05, 0x0F,        //   Usage Page (PID Page)
+ 130                  0x09, 0x21,        //   Usage (0x21)
+ 131          
+ 132                  0x85, 0x03,        //   Report ID (3)
+ 133          
+ 134                  0xA1, 0x02,        //   Collection (Logical)
+ 135                  0x09, 0x97,        //     Usage (0x97)
+ 136                  0x15, 0x00,        //     Logical Minimum (0)
+ 137                  0x25, 0x01,        //     Logical Maximum (1)
+ 138                  0x75, 0x04,        //     Report Size (4)
+ 139                  0x95, 0x01,        //     Report Count (1)
+ 140                  0x91, 0x02,        //     Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non
+             --volatile)
+ 141                  0x15, 0x00,        //     Logical Minimum (0)
+ 142                  0x25, 0x00,        //     Logical Maximum (0)
+ 143                  0x75, 0x04,        //     Report Size (4)
+ 144                  0x95, 0x01,        //     Report Count (1)
+ 145                  0x91, 0x03,        //     Output (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,No
+             -n-volatile)
+ 146                  0x09, 0x70,        //     Usage (0x70)
+ 147                  0x15, 0x00,        //     Logical Minimum (0)
+ 148                  0x25, 0x64,        //     Logical Maximum (100)
+ 149                  0x75, 0x08,        //     Report Size (8)
+ 150                  0x95, 0x04,        //     Report Count (4)
+ 151                  0x91, 0x02,        //     Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non
+             --volatile)
+ 152                  0x09, 0x50,        //     Usage (0x50)
+ 153                  0x66, 0x01, 0x10,  //     Unit (System: SI Linear, Time: Seconds)
+ 154                  0x55, 0x0E,        //     Unit Exponent (-2)
+ 155                  0x15, 0x00,        //     Logical Minimum (0)
+ 156                  0x26, 0xFF, 0x00,  //     Logical Maximum (255)
+ 157                  0x75, 0x08,        //     Report Size (8)
+ 158                  0x95, 0x01,        //     Report Count (1)
+ 159                  0x91, 0x02,        //     Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non
+             --volatile)
+ 160                  0x09, 0xA7,        //     Usage (0xA7)
+ 161                  0x15, 0x00,        //     Logical Minimum (0)
+ 162                  0x26, 0xFF, 0x00,  //     Logical Maximum (255)
+ 163                  0x75, 0x08,        //     Report Size (8)
+ 164                  0x95, 0x01,        //     Report Count (1)
+ 165                  0x91, 0x02,        //     Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non
+             --volatile)
+ 166                  0x65, 0x00,        //     Unit (None)
+C51 COMPILER V9.60.0.0   XINPUT_DESC                                                       12/14/2022 01:42:56 PAGE 4   
+
+ 167                  0x55, 0x00,        //     Unit Exponent (0)
+ 168                  0x09, 0x7C,        //     Usage (0x7C)
+ 169                  0x15, 0x00,        //     Logical Minimum (0)
+ 170                  0x26, 0xFF, 0x00,  //     Logical Maximum (255)
+ 171                  0x75, 0x08,        //     Report Size (8)
+ 172                  0x95, 0x01,        //     Report Count (1)
+ 173                  0x91, 0x02,        //     Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non
+             --volatile)
+ 174                  0xC0,              //   End Collection
+ 175                  0x85, 0x04,        //   Report ID (4)
+ 176                  0x05, 0x06,        //   Usage Page (Generic Dev Ctrls)
+ 177                  0x09, 0x20,        //   Usage (Battery Strength)
+ 178                  0x15, 0x00,        //   Logical Minimum (0)
+ 179                  0x26, 0xFF, 0x00,  //   Logical Maximum (255)
+ 180                  0x75, 0x08,        //   Report Size (8)
+ 181                  0x95, 0x01,        //   Report Count (1)
+ 182                  0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+ 183                  0xC0,              // End Collection
+ 184                  // 306 bytes
+ 185          };
+ 186          
+ 187          // Xinput Device Description
+ 188          extern SI_SEGMENT_VARIABLE(xinput_device_descriptor[],
+ 190                              const USB_DeviceDescriptor_TypeDef,
+ 190                              SI_SEG_CODE) =
+ 191          {
+ 192            USB_DEVICE_DESCSIZE,             // bLength
+ 193            USB_DEVICE_DESCRIPTOR,           // bLength
+ 194            htole16(0x0110),                 // bcdUSB
+ 195            0x03,                            // bDeviceClass
+ 196            0xFF,                            // bDeviceSubClass
+ 197            0xFF,                            // bDeviceProtocol
+ 198            64,                              // bMaxPacketSize
+ 199            XINPUT_VENDOR_ID,                   // idVendor
+ 200            XINPUT_PROD_ID,                  // idProduct
+ 201            htole16(0x0572),                 // bcdDevice
+ 202            1,                               // iManufacturer
+ 203            2,                               // iProduct
+ 204            0,                               // iSerialNumber
+ 205            1,                               // bNumConfigurations
+ 206          };
+ 207          
+ 208          // Xinput Config Description
+ 209          extern SI_SEGMENT_VARIABLE(xinput_config_descriptor[],
+ 211                              const uint8_t,
+ 211                              SI_SEG_CODE) =
+ 212          {
+ 213            USB_CONFIG_DESCSIZE,             // bLength
+ 214            USB_CONFIG_DESCRIPTOR,           // bLength
+ 215            0x29,                            // wTotalLength(LSB)
+ 216            0x00,                            // wTotalLength(MSB)
+ 217            1,                               // bNumInterfaces
+ 218            1,                               // bConfigurationValue
+ 219            0,                               // iConfiguration
+ 220          
+ 221            CONFIG_DESC_BM_RESERVED_D7,     // bmAttrib: usb powered,
+ 222          
+ 223            CONFIG_DESC_MAXPOWER_mA(500),    // bMaxPower: 500 mA
+ 224          
+ 225            //Interface 0 Descriptor
+ 226            USB_INTERFACE_DESCSIZE,          // bLength
+ 227            USB_INTERFACE_DESCRIPTOR,        // bDescriptorType
+ 228            0,                               // bInterfaceNumber
+C51 COMPILER V9.60.0.0   XINPUT_DESC                                                       12/14/2022 01:42:56 PAGE 5   
+
+ 229            0,                               // bAlternateSetting
+ 230            2,                               // bNumEndpoints
+ 231            3,                               // bInterfaceClass: HID (Human Interface Device)
+ 232            0,                               // bInterfaceSubClass
+ 233            0,                               // bInterfaceProtocol
+ 234            0,                               // iInterface
+ 235          
+ 236            //HID Descriptor
+ 237            USB_HID_DESCSIZE,                // bLength
+ 238            USB_HID_DESCRIPTOR,              // bLength
+ 239            0x11,                            // bcdHID (LSB)
+ 240            0x01,                            // bcdHID (MSB)
+ 241            0,                               // bCountryCode
+ 242            1,                               // bNumDescriptors
+ 243            USB_HID_REPORT_DESCRIPTOR,       // bDescriptorType
+ 244            sizeof( xinput_hid_descriptor ),     // wDescriptorLength(LSB)
+ 245            sizeof( xinput_hid_descriptor ) >> 8,    // wDescriptorLength(MSB)
+ 246          
+ 247            //Endpoint 1 IN Descriptor
+ 248            USB_ENDPOINT_DESCSIZE,           // bLength
+ 249            USB_ENDPOINT_DESCRIPTOR,         // bDescriptorType
+ 250            0x81,                            // bEndpointAddress
+ 251            USB_EPTYPE_INTR,                 // bAttrib
+ 252            0x40,                            // wMaxPacketSize (LSB)
+ 253            0x00,                            // wMaxPacketSize (MSB)
+ 254            0x02,                            // bInterval (2ms)
+ 255          
+ 256            //Endpoint 2 OUT Descriptor
+ 257            USB_ENDPOINT_DESCSIZE,           // bLength
+ 258            USB_ENDPOINT_DESCRIPTOR,         // bDescriptorType
+ 259            0x02,                            // bEndpointAddress
+ 260            USB_EPTYPE_INTR,                 // bAttrib
+ 261            0x40,                            // wMaxPacketSize (LSB)
+ 262            0x00,                            // wMaxPacketSize (MSB)
+ 263            0x04,                            // bInterval (4ms)
+ 264          };
+ 265          
+ 266          SI_SEGMENT_VARIABLE_SEGMENT_POINTER(xinput_UsbStringTable_USEnglish[], static const USB_StringDescriptor_T
+             -ypeDef, SI_SEG_GENERIC, const SI_SEG_CODE) =
+ 267          {
+ 268            (SI_VARIABLE_SEGMENT_POINTER(, uint8_t, SI_SEG_CODE))global_lang_descriptor,
+ 269            global_mfr_descriptor,
+ 270            xinput_prod_descriptor,
+ 271            global_serial_descriptor
+ 272          };
+ 273          
+ 274          // xinput initialization Struct
+ 275          extern SI_SEGMENT_VARIABLE(xinput_init_struct,
+ 277                              const USBD_Init_TypeDef,
+ 277                              SI_SEG_CODE) =
+ 278          {
+ 279            (SI_VARIABLE_SEGMENT_POINTER(, USB_DeviceDescriptor_TypeDef, SI_SEG_GENERIC))xinput_device_descriptor,  
+             -            // deviceDescriptor
+ 280            (SI_VARIABLE_SEGMENT_POINTER(, USB_ConfigurationDescriptor_TypeDef, SI_SEG_GENERIC))xinput_config_descri
+             -ptor,       // configDescriptor
+ 281            (SI_VARIABLE_SEGMENT_POINTER(, USB_StringTable_TypeDef, SI_SEG_GENERIC))xinput_UsbStringTable_USEnglish,
+             -   // stringDescriptors
+ 282            sizeof(xinput_UsbStringTable_USEnglish) / sizeof(xinput_UsbStringTable_USEnglish[0])                    
+             -        // numberOfStrings
+ 283          };
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.60.0.0   XINPUT_DESC                                                       12/14/2022 01:42:56 PAGE 6   
+
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =    428    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

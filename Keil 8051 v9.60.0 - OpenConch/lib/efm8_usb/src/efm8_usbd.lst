@@ -1,0 +1,836 @@
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE EFM8_USBD
+OBJECT MODULE PLACED IN .\lib\efm8_usb\src\efm8_usbd.OBJ
+COMPILER INVOKED BY: C:\SiliconLabs\SimplicityStudio\v5\developer\toolchains\keil_8051\9.60\BIN\C51.exe C:\SiliconLabs\S
+                    -implicityStudio\v5\developer\sdks\8051\v4.2.4\Lib\efm8_usb\src\efm8_usbd.c OMF2 LARGE ROM(LARGE) WARNINGLEVEL(2) FLOATFU
+                    -ZZY(3) OPTIMIZE(9,SIZE) DEFINE(NDEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\Mitch\SimplicityStudio\v5_workspac
+                    -e\HOJA-USB-EFM8UB1\inc;C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-EFM8UB1\inc\config;C:/SiliconLabs/Simplicit
+                    -yStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_assert;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Li
+                    -b/efm8_usb/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/peripheral_driver/inc;C:/Si
+                    -liconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_usbc/lib_kernel/inc;C:/SiliconLabs/SimplicityStudio/v
+                    -5/developer/sdks/8051/v4.2.4//Lib/efm8_usbc/lib_usbc_pd/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.
+                    -4//Device/shared/si8051Base;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/inc) REGFILE(H
+                    -OJA-USB-EFM8UB1.ORC) PRINT(.\lib\efm8_usb\src\efm8_usbd.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OA OBJECT(.\lib\efm8_usb
+                    -\src\efm8_usbd.OBJ)
+
+line level    source
+
+   1          /**************************************************************************//**
+   2           * Copyright (c) 2015 by Silicon Laboratories Inc. All rights reserved.
+   3           *
+   4           * http://developer.silabs.com/legal/version/v11/Silicon_Labs_Software_License_Agreement.txt
+   5           *****************************************************************************/
+   6          
+   7          #include "si_toolchain.h"
+   8          #include "efm8_usb.h"
+   9          #include "assert.h"
+*** WARNING C318 IN LINE 9 OF C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_assert\assert.h: c
+             -an't open file 'efm8_config.h'
+  10          #include <stdint.h>
+  11          
+  12          // -----------------------------------------------------------------------------
+  13          // Global Variables
+  14          
+  15          /// Tracks the state of the USB device and endpoints and contains pointers
+  16          /// to all descriptors.
+  17          SI_SEGMENT_VARIABLE(myUsbDevice, USBD_Device_TypeDef, MEM_MODEL_SEG);
+  18          
+  19          // -----------------------------------------------------------------------------
+  20          // Macros
+  21          
+  22          /// Returns the requested endpoint object of type USBD_Ep_TypeDef
+  23          /// This macro does not check that epAddr is valid, so the calling function
+  24          /// should verify epAddr before using the macro.
+  25          #define GetEp(epAddr)  (&myUsbDevice.ep0 + epAddr)
+  26          
+  27          
+  28          #if SLAB_USB_POLLED_MODE
+              #define DISABLE_USB_INTS  {}
+              #define ENABLE_USB_INTS   {}
+              
+              #else
+  33          /// Saves the current state of the USB Interrupt Enable to a variable called
+  34          /// usbIntsEnabled, then disables USB interrupts.
+  35          #define DISABLE_USB_INTS  { usbIntsEnabled = USB_GetIntsEnabled(); USB_DisableInts(); }
+  36          
+  37          /// Sets the USB Interrupt Enable bit to the value of usbIntsEnabled.
+  38          /// @ref DISABLE_USB_INTS must be used before this macro is used.
+  39          #define ENABLE_USB_INTS   { if (usbIntsEnabled) {USB_EnableInts(); } }
+  40          #endif  // SLAB_USB_POLLED_MODE
+  41          
+  42          // Function in efm8_usbdint.c to force load the module for libraries
+  43          extern void forceModuleLoad_usbint(void);
+  44          
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 2   
+
+  45          // -----------------------------------------------------------------------------
+  46          // USB API Functions
+  47          
+  48          void USBD_AbortAllTransfers(void)
+  49          {
+  50   1        uint8_t i;
+  51   1        bool usbIntsEnabled;
+  52   1      
+  53   1        USB_SaveSfrPage();
+  54   1        DISABLE_USB_INTS;
+  55   1      
+  56   1        // Call USBD_AbortTransfer() for each endpoint
+  57   1        for (i = 1; i < SLAB_USB_NUM_EPS_USED; i++)
+  58   1        {
+  59   2          USBD_AbortTransfer(i);
+  60   2        }
+  61   1      
+  62   1        ENABLE_USB_INTS;
+  63   1        USB_RestoreSfrPage();
+  64   1      }
+  65          
+  66          int8_t USBD_AbortTransfer(uint8_t epAddr)
+  67          {
+  68   1        SI_VARIABLE_SEGMENT_POINTER(ep, USBD_Ep_TypeDef, MEM_MODEL_SEG);
+  69   1        int8_t retVal = USB_STATUS_OK;
+  70   1        bool usbIntsEnabled;
+  71   1      
+  72   1        USB_SaveSfrPage();
+  73   1      
+  74   1        // Verify this is a valid endpoint address and is not Endpoint 0.
+  75   1        if ((epAddr == EP0) || (epAddr >= SLAB_USB_NUM_EPS_USED))
+  76   1        {
+  77   2          SLAB_ASSERT(false);
+  78   2          retVal = USB_STATUS_ILLEGAL;
+  79   2        }
+  80   1        else
+  81   1        {
+  82   2          DISABLE_USB_INTS;
+  83   2          ep = GetEp(epAddr);
+  84   2      
+  85   2          // If the state of the endpoint is already idle, there is not need to abort
+  86   2          // a transfer
+  87   2          if (ep->state != D_EP_IDLE)
+  88   2          {
+  89   3            switch (epAddr)
+  90   3            {
+  91   4        #if SLAB_USB_EP1IN_USED
+  92   4              case EP1IN:
+  93   4                USB_AbortInEp(1);
+  94   4                break;
+  95   4        #endif
+  96   4        #if SLAB_USB_EP2IN_USED
+  97   4              case EP2IN:
+  98   4                USB_AbortInEp(2);
+  99   4                break;
+ 100   4        #endif
+ 101   4        #if SLAB_USB_EP3IN_USED
+                      case EP3IN:
+                        USB_AbortInEp(3);
+                        break;
+                #endif
+ 106   4        #if SLAB_USB_EP1OUT_USED
+ 107   4              case EP1OUT:
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 3   
+
+ 108   4                USB_AbortOutEp(1);
+ 109   4                break;
+ 110   4        #endif
+ 111   4        #if SLAB_USB_EP2OUT_USED
+ 112   4              case EP2OUT:
+ 113   4                USB_AbortOutEp(2);
+ 114   4                break;
+ 115   4        #endif
+ 116   4        #if SLAB_USB_EP3OUT_USED
+                      case EP3OUT:
+                        USB_AbortOutEp(3);
+                        break;
+                #endif
+ 121   4            }
+ 122   3      
+ 123   3            // Set the endpoint state to idle and clear out endpoint state variables
+ 124   3            ep->state = D_EP_IDLE;
+ 125   3            ep->misc.c = 0;
+ 126   3          }
+ 127   2        }
+ 128   1      
+ 129   1        ENABLE_USB_INTS;
+ 130   1        USB_RestoreSfrPage();
+ 131   1      
+ 132   1        return retVal;
+ 133   1      }
+ 134          
+ 135          void USBD_Connect(void)
+ 136          {
+ 137   1        USB_SaveSfrPage();
+ 138   1        myUsbDevice.ep0.state = D_EP_IDLE;
+ 139   1        USB_EnablePullUpResistor();
+ 140   1        USB_EnableTransceiver();
+ 141   1        USB_RestoreSfrPage();
+ 142   1      }
+ 143          
+ 144          void USBD_Disconnect(void)
+ 145          {
+ 146   1        USB_SaveSfrPage();
+ 147   1        USB_DisablePullUpResistor();
+ 148   1        USB_RestoreSfrPage();
+ 149   1      }
+ 150          
+ 151          bool USBD_EpIsBusy(uint8_t epAddr)
+ 152          {
+ 153   1        SI_VARIABLE_SEGMENT_POINTER(ep, USBD_Ep_TypeDef, MEM_MODEL_SEG);
+ 154   1      
+ 155   1        // Verify this is a valid endpoint address
+ 156   1        if (epAddr >= SLAB_USB_NUM_EPS_USED)
+ 157   1        {
+ 158   2          SLAB_ASSERT(false);
+ 159   2          return true;
+ 160   2        }
+ 161   1      
+ 162   1        ep = GetEp(epAddr);
+ 163   1      
+ 164   1        if (ep->state == D_EP_IDLE)
+ 165   1        {
+ 166   2          return false;
+ 167   2        }
+ 168   1      
+ 169   1        return true;
+ 170   1      }
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 4   
+
+ 171          
+ 172          USBD_State_TypeDef USBD_GetUsbState(void)
+ 173          {
+ 174   1        return myUsbDevice.state;
+ 175   1      }
+ 176          
+ 177          int8_t USBD_Init(SI_VARIABLE_SEGMENT_POINTER(p, const USBD_Init_TypeDef, SI_SEG_GENERIC))
+ 178          {
+ 179   1        uint8_t i;
+ 180   1      
+ 181   1        USB_SaveSfrPage();
+ 182   1        USB_DisableInts();
+ 183   1      
+ 184   1        // This forces the liner to bring in the contents efm8_usbdint
+ 185   1        // It is place here since all users MUST call this function
+ 186   1        // for the library to work properly
+ 187   1        forceModuleLoad_usbint();
+ 188   1      
+ 189   1      
+ 190   1        // Zero out the myUsbDevice struct, then initialize all non-zero members
+ 191   1        for (i = 0; i < sizeof(myUsbDevice); i++)
+ 192   1        {
+ 193   2          *((SI_VARIABLE_SEGMENT_POINTER(, uint8_t, MEM_MODEL_SEG))&myUsbDevice + i) = 0;
+ 194   2        }
+ 195   1      
+ 196   1        // Get the USB descriptors from p
+ 197   1        myUsbDevice.deviceDescriptor = p->deviceDescriptor;
+ 198   1        myUsbDevice.configDescriptor = p->configDescriptor;
+ 199   1        myUsbDevice.stringDescriptors = p->stringDescriptors;
+ 200   1        myUsbDevice.numberOfStrings = p->numberOfStrings;
+ 201   1      
+ 202   1        // Enable USB clock
+ 203   1      #if SLAB_USB_FULL_SPEED
+ 204   1        USB_SetClockIntOsc();
+ 205   1        USB_SelectFullSpeed();
+ 206   1      #else
+                USB_SetClockIntOscDiv8();
+                USB_SelectLowSpeed();
+              #endif // SLAB_USB_FULL_SPEED
+ 210   1      
+ 211   1        // Enable or disable VBUS detection
+ 212   1      #if SLAB_USB_BUS_POWERED
+ 213   1        USB_VbusDetectDisable();
+ 214   1      #else
+                USB_VbusDetectEnable();
+              #endif
+ 217   1      
+ 218   1        USB_ForceReset();
+ 219   1        USB_EnableDeviceInts();
+ 220   1        USBD_Connect();
+ 221   1      
+ 222   1        // If VBUS is present, the state should be Default.
+ 223   1        // Otherwise, it is Attached.
+ 224   1      #if SLAB_USB_BUS_POWERED
+ 225   1        myUsbDevice.state = USBD_STATE_DEFAULT;
+ 226   1      #else
+                if (USB_IsVbusOn())
+                {
+                  myUsbDevice.state = USBD_STATE_DEFAULT;
+                }
+                else
+                {
+                  myUsbDevice.state = USBD_STATE_ATTACHED;
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 5   
+
+                }
+              #endif
+ 236   1      
+ 237   1        // Only enable USB interrupts when not in polled mode
+ 238   1      #if (SLAB_USB_POLLED_MODE == 0)
+ 239   1        USB_EnableInts();
+ 240   1      #endif
+ 241   1      
+ 242   1        USB_RestoreSfrPage();
+ 243   1        USB_DisableInhibit();
+ 244   1      
+ 245   1        return USB_STATUS_OK;
+ 246   1      }
+ 247          
+ 248          int8_t USBD_Read(uint8_t epAddr,
+ 249                           SI_VARIABLE_SEGMENT_POINTER(dat, uint8_t, SI_SEG_GENERIC),
+ 250                           uint16_t byteCount,
+ 251                           bool callback)
+ 252          {
+ 253   1        bool usbIntsEnabled;
+ 254   1        SI_VARIABLE_SEGMENT_POINTER(ep, USBD_Ep_TypeDef, MEM_MODEL_SEG);
+ 255   1      
+ 256   1        USB_SaveSfrPage();
+ 257   1      
+ 258   1        // Verify the endpoint address is valid.
+ 259   1        switch (epAddr)
+ 260   1        {
+ 261   2          case EP0:
+ 262   2      #if SLAB_USB_EP1OUT_USED
+ 263   2          case EP1OUT:
+ 264   2      #endif
+ 265   2      #if SLAB_USB_EP2OUT_USED
+ 266   2          case EP2OUT:
+ 267   2      #endif
+ 268   2      #if SLAB_USB_EP3OUT_USED
+                  case EP3OUT:
+              #endif
+ 271   2            break;
+ 272   2      #if SLAB_USB_EP1IN_USED
+ 273   2          case EP1IN:
+ 274   2      #endif
+ 275   2      #if SLAB_USB_EP2IN_USED
+ 276   2          case EP2IN:
+ 277   2      #endif
+ 278   2      #if SLAB_USB_EP3IN_USED
+                  case EP3IN:
+              #endif
+ 281   2          default:
+ 282   2            SLAB_ASSERT(false);
+ 283   2            return USB_STATUS_ILLEGAL;
+ 284   2        }
+ 285   1      
+ 286   1        // If the device has not been configured, we cannot start a transfer.
+ 287   1        if ((epAddr != EP0) && (myUsbDevice.state != USBD_STATE_CONFIGURED))
+ 288   1        {
+ 289   2          return USB_STATUS_DEVICE_UNCONFIGURED;
+ 290   2        }
+ 291   1      
+ 292   1        ep = GetEp(epAddr);
+ 293   1      
+ 294   1        // If the endpoint is not idle, we cannot start a new transfer.
+ 295   1        // Return the appropriate error code.
+ 296   1        if (ep->state != D_EP_IDLE)
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 6   
+
+ 297   1        {
+ 298   2          if (ep->state == D_EP_STALL)
+ 299   2          {
+ 300   3            return USB_STATUS_EP_STALLED;
+ 301   3          }
+ 302   2          else
+ 303   2          {
+ 304   3            return USB_STATUS_EP_BUSY;
+ 305   3          }
+ 306   2        }
+ 307   1      
+ 308   1        DISABLE_USB_INTS;
+ 309   1      
+ 310   1        ep->buf = dat;
+ 311   1        ep->remaining = byteCount;
+ 312   1        ep->state = D_EP_RECEIVING;
+ 313   1        ep->misc.bits.callback = callback;
+ 314   1        ep->misc.bits.waitForRead = false;
+ 315   1      
+ 316   1        // If isochronous, set the buffer index to 0
+ 317   1      #if ((SLAB_USB_EP3OUT_USED) && (SLAB_USB_EP3OUT_TRANSFER_TYPE == USB_EPTYPE_ISOC))
+                if (epAddr == EP3OUT)
+                {
+                  myUsbDevice.ep3outIsoIdx = 0;
+                }
+              #endif
+ 323   1      
+ 324   1        ENABLE_USB_INTS;
+ 325   1        USB_RestoreSfrPage();
+ 326   1      
+ 327   1        return USB_STATUS_OK;
+ 328   1      }
+ 329          
+ 330          #if SLAB_USB_REMOTE_WAKEUP_ENABLED
+ 331          int8_t USBD_RemoteWakeup(void)
+ 332          {
+ 333   1        // The device must be suspended and Remote Wakeup must have been previously
+ 334   1        // configured with a SET_FEATURE (Remote Wakeup) command.
+ 335   1        if ((myUsbDevice.state != USBD_STATE_SUSPENDED) ||
+ 336   1            (myUsbDevice.remoteWakeupEnabled == false))
+ 337   1        {
+ 338   2          return USB_STATUS_ILLEGAL;
+ 339   2        }
+ 340   1      
+ 341   1        USB_ForceResume();
+ 342   1        USBD_RemoteWakeupDelay();   // Application will provide the delay between
+ 343   1                                    // starting and stopping the resume signal.
+ 344   1        USB_ClearResume();
+ 345   1      
+ 346   1        return USB_STATUS_OK;
+ 347   1      }
+ 348          #endif // SLAB_USB_REMOTE_WAKEUP_ENABLED
+ 349          
+ 350          #if SLAB_USB_POLLED_MODE
+              void USBD_Run(void)
+              {
+                usbIrqHandler();
+              }
+              #endif // SLAB_USB_POLLED_MODE
+ 356          
+ 357          int8_t USBD_StallEp(uint8_t epAddr)
+ 358          {
+ 359   1        bool usbIntsEnabled;
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 7   
+
+ 360   1      
+ 361   1        USB_SaveSfrPage();
+ 362   1      
+ 363   1        // Verify the endpoint address is valid and not Endpoint 0.
+ 364   1        if ((epAddr == EP0) || (epAddr >= SLAB_USB_NUM_EPS_USED))
+ 365   1        {
+ 366   2          SLAB_ASSERT(false);
+ 367   2          return USB_STATUS_ILLEGAL;
+ 368   2        }
+ 369   1      
+ 370   1        DISABLE_USB_INTS;
+ 371   1      
+ 372   1        // Halt the appropriate endpoint by sending a stall and setting the endpoint
+ 373   1        // state to Halted (D_EP_HALT).
+ 374   1        switch (epAddr)
+ 375   1        {
+ 376   2      #if SLAB_USB_EP1IN_USED
+ 377   2          case (EP1IN):
+ 378   2            myUsbDevice.ep1in.state = D_EP_HALT;
+ 379   2            USB_SetIndex(1);
+ 380   2            USB_EpnInStall();
+ 381   2            break;
+ 382   2      #endif
+ 383   2      #if SLAB_USB_EP2IN_USED
+ 384   2          case (EP2IN):
+ 385   2            myUsbDevice.ep2in.state = D_EP_HALT;
+ 386   2            USB_SetIndex(2);
+ 387   2            USB_EpnInStall();
+ 388   2            break;
+ 389   2      #endif
+ 390   2      #if SLAB_USB_EP3IN_USED
+                  case (EP3IN):
+                    myUsbDevice.ep3in.state = D_EP_HALT;
+                    USB_SetIndex(3);
+                    USB_EpnInStall();
+                    break;
+              #endif
+ 397   2      #if SLAB_USB_EP1OUT_USED
+ 398   2          case (EP1OUT):
+ 399   2            myUsbDevice.ep1out.state = D_EP_HALT;
+ 400   2            USB_SetIndex(1);
+ 401   2            USB_EpnOutStall();
+ 402   2            break;
+ 403   2      #endif
+ 404   2      #if SLAB_USB_EP2OUT_USED
+ 405   2          case (EP2OUT):
+ 406   2            myUsbDevice.ep2out.state = D_EP_HALT;
+ 407   2            USB_SetIndex(2);
+ 408   2            USB_EpnOutStall();
+ 409   2            break;
+ 410   2      #endif
+ 411   2      #if SLAB_USB_EP3OUT_USED
+                  case (EP3OUT):
+                    myUsbDevice.ep3out.state = D_EP_HALT;
+                    USB_SetIndex(3);
+                    USB_EpnOutStall();
+                    break;
+              #endif
+ 418   2        }
+ 419   1      
+ 420   1        ENABLE_USB_INTS;
+ 421   1        USB_RestoreSfrPage();
+ 422   1      
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 8   
+
+ 423   1        return USB_STATUS_OK;
+ 424   1      }
+ 425          
+ 426          void USBD_Stop(void)
+ 427          {
+ 428   1        USB_DisableInts();
+ 429   1        USBD_Disconnect();
+ 430   1        USBD_SetUsbState(USBD_STATE_NONE);
+ 431   1      }
+ 432          
+ 433          void USBD_Suspend(void)
+ 434          {
+ 435   1      #if (!(SLAB_USB_PWRSAVE_MODE & USB_PWRSAVE_MODE_FASTWAKE))
+ 436   1        uint8_t i;
+ 437   1      #endif
+ 438   1        bool regulatorEnabled;
+ 439   1      #if SLAB_USB_REMOTE_WAKEUP_ENABLED
+ 440   1        bool remoteWakeup = false;
+ 441   1      #endif
+ 442   1      
+ 443   1        USB_SaveSfrPage();
+ 444   1      
+ 445   1        // If the USB_PWRSAVE_MODE_ONVBUSOFF is enabled, we can enter suspend if VBUS
+ 446   1        // is not present even if the USB has not detected a suspend event.
+ 447   1      #if ((!(SLAB_USB_PWRSAVE_MODE & USB_PWRSAVE_MODE_ONVBUSOFF)) || \
+ 448   1             (SLAB_USB_BUS_POWERED))
+ 449   1        if (USB_IsSuspended() == true)
+ 450   1      #else
+                if ((USB_IsSuspended() == true) || (USB_IsVbusOn() == false))
+              #endif
+ 453   1        {
+ 454   2          USB_SuspendTransceiver();
+ 455   2      
+ 456   2      #if SLAB_USB_FULL_SPEED
+ 457   2          USB_SetSuspendClock();
+ 458   2      #endif
+ 459   2      
+ 460   2          // Get the state of the internal regulator before suspending it.
+ 461   2          if (USB_IsRegulatorEnabled() == true)
+ 462   2          {
+ 463   3            regulatorEnabled = true;
+ 464   3      
+ 465   3      #if (SLAB_USB_PWRSAVE_MODE & USB_PWRSAVE_MODE_FASTWAKE)
+                    USB_SuspendRegulatorFastWake();
+              #else
+ 468   3            USB_SuspendRegulator();
+ 469   3      
+ 470   3            // Wait at least 12 clock instructions before halting the internal oscillator
+ 471   3            for (i = 0; i < 3; i++)
+ 472   3            {
+ 473   4            }
+ 474   3      #endif
+ 475   3          }
+ 476   2          else
+ 477   2          {
+ 478   3            regulatorEnabled = false;
+ 479   3          }
+ 480   2      
+ 481   2          do
+ 482   2          {
+ 483   3            USB_SuspendOscillator();
+ 484   3      
+ 485   3            // When we arrive here, the device has waked from suspend mode.
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 9   
+
+ 486   3      
+ 487   3      #if SLAB_USB_REMOTE_WAKEUP_ENABLED
+ 488   3            // If remote wakeup is enabled, query the application if the remote
+ 489   3            // wakeup event occurred. If so, exit USBD_Suspend().
+ 490   3            if (USB_IsSuspended() == true)
+ 491   3            {
+ 492   4              remoteWakeup = USBD_RemoteWakeupCb();
+ 493   4              if (remoteWakeup == true)
+ 494   4              {          
+ 495   5                break;
+ 496   5              }
+ 497   4            }
+ 498   3      #endif
+ 499   3      #if ((!(SLAB_USB_PWRSAVE_MODE & USB_PWRSAVE_MODE_ONVBUSOFF)) && \
+ 500   3             (SLAB_USB_BUS_POWERED == 0))
+                    // If the USB_PWRSAVE_MODE_ONVBUSOFF mode is disabled, VBUS has been
+                    // removed, so exit USBD_Suspend().
+                    if (USB_IsVbusOn() == false)
+                    {
+                      break;
+                    }
+              #endif
+ 508   3      
+ 509   3      #if ((!(SLAB_USB_PWRSAVE_MODE & USB_PWRSAVE_MODE_ONVBUSOFF)) || \
+ 510   3             (SLAB_USB_BUS_POWERED))
+ 511   3          } while (USB_IsSuspended() == true);
+ 512   2      #else
+                  } while ((USB_IsSuspended() == true) || (USB_IsVbusOn() == false));
+              #endif
+ 515   2          // Restore the internal regulator
+ 516   2          if (regulatorEnabled == true)
+ 517   2          {
+ 518   3            USB_UnsuspendRegulator();
+ 519   3          }
+ 520   2      
+ 521   2      #if SLAB_USB_FULL_SPEED
+ 522   2          // Restore the clock
+ 523   2          USB_SetNormalClock();
+ 524   2      #endif
+ 525   2          USB_EnableTransceiver();
+ 526   2          
+ 527   2      #if SLAB_USB_REMOTE_WAKEUP_ENABLED
+ 528   2          // If the device woke from suspend due to a remote wakeup source, call
+ 529   2          // USBD_RemoteWakeup() here to wake up the host.
+ 530   2          if (remoteWakeup == true)
+ 531   2          {
+ 532   3            // Wake up the host
+ 533   3            if (USBD_RemoteWakeup() == USB_STATUS_OK)
+ 534   3            {
+ 535   4              // If the remote wakeup succeeded, transition out of  USB suspend state
+ 536   4              USBD_SetUsbState(myUsbDevice.savedState);
+ 537   4            }
+ 538   3          }
+ 539   2      #endif
+ 540   2        }
+ 541   1      
+ 542   1        USB_RestoreSfrPage();
+ 543   1      }
+ 544          
+ 545          int8_t USBD_UnStallEp(uint8_t epAddr)
+ 546          {
+ 547   1        bool usbIntsEnabled;
+ 548   1      
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 10  
+
+ 549   1        USB_SaveSfrPage();
+ 550   1      
+ 551   1        // Verify the endpoint address is valid and not Endpoint 0.
+ 552   1        if ((epAddr == EP0) || (epAddr >= SLAB_USB_NUM_EPS_USED))
+ 553   1        {
+ 554   2          SLAB_ASSERT(false);
+ 555   2          return USB_STATUS_ILLEGAL;
+ 556   2        }
+ 557   1        else
+ 558   1        {
+ 559   2          DISABLE_USB_INTS;
+ 560   2      
+ 561   2          // End the stall condition and set the endpoint state to idle.
+ 562   2          switch (epAddr)
+ 563   2          {
+ 564   3      #if SLAB_USB_EP1IN_USED
+ 565   3            case (EP1IN):
+ 566   3              myUsbDevice.ep1in.state = D_EP_IDLE;
+ 567   3              USB_SetIndex(1);
+ 568   3              USB_EpnInEndStall();
+ 569   3              break;
+ 570   3      #endif
+ 571   3      #if SLAB_USB_EP2IN_USED
+ 572   3            case (EP2IN):
+ 573   3              myUsbDevice.ep2in.state = D_EP_IDLE;
+ 574   3              USB_SetIndex(2);
+ 575   3              USB_EpnInEndStall();
+ 576   3              break;
+ 577   3      #endif
+ 578   3      #if SLAB_USB_EP3IN_USED
+                    case (EP3IN):
+                      myUsbDevice.ep3in.state = D_EP_IDLE;
+                      USB_SetIndex(3);
+                      USB_EpnInEndStall();
+                      break;
+              #endif
+ 585   3      #if SLAB_USB_EP1OUT_USED
+ 586   3            case (EP1OUT):
+ 587   3              myUsbDevice.ep1out.state = D_EP_IDLE;
+ 588   3              USB_SetIndex(1);
+ 589   3              USB_EpnOutEndStall();
+ 590   3              break;
+ 591   3      #endif
+ 592   3      #if SLAB_USB_EP2OUT_USED
+ 593   3            case (EP2OUT):
+ 594   3              myUsbDevice.ep2out.state = D_EP_IDLE;
+ 595   3              USB_SetIndex(2);
+ 596   3              USB_EpnOutEndStall();
+ 597   3              break;
+ 598   3      #endif
+ 599   3      #if SLAB_USB_EP3OUT_USED
+                    case (EP3OUT):
+                      myUsbDevice.ep3out.state = D_EP_IDLE;
+                      USB_SetIndex(3);
+                      USB_EpnOutEndStall();
+                      break;
+              #endif
+ 606   3          }
+ 607   2      
+ 608   2          ENABLE_USB_INTS;
+ 609   2          USB_RestoreSfrPage();
+ 610   2        }
+ 611   1      
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 11  
+
+ 612   1        return USB_STATUS_OK;
+ 613   1      }
+ 614          
+ 615          int8_t USBD_Write(uint8_t epAddr,
+ 616                            SI_VARIABLE_SEGMENT_POINTER(dat, uint8_t, SI_SEG_GENERIC),
+ 617                            uint16_t byteCount,
+ 618                            bool callback)
+ 619          {
+ 620   1        bool usbIntsEnabled;
+ 621   1        SI_VARIABLE_SEGMENT_POINTER(ep, USBD_Ep_TypeDef, MEM_MODEL_SEG);
+ 622   1      
+ 623   1        USB_SaveSfrPage();
+ 624   1      
+ 625   1        // Verify the endpoint address is valid.
+ 626   1        switch (epAddr)
+ 627   1        {
+ 628   2          case EP0:
+ 629   2      #if SLAB_USB_EP1IN_USED
+ 630   2          case EP1IN:
+ 631   2      #endif
+ 632   2      #if SLAB_USB_EP2IN_USED
+ 633   2          case EP2IN:
+ 634   2      #endif
+ 635   2      #if SLAB_USB_EP3IN_USED
+                  case EP3IN:
+              #endif
+ 638   2            break;
+ 639   2      #if SLAB_USB_EP1OUT_USED
+ 640   2          case EP1OUT:
+ 641   2      #endif
+ 642   2      #if SLAB_USB_EP2OUT_USED
+ 643   2          case EP2OUT:
+ 644   2      #endif
+ 645   2      #if SLAB_USB_EP3OUT_USED
+                  case EP3OUT:
+              #endif
+ 648   2          default:
+ 649   2            SLAB_ASSERT(false);
+ 650   2            return USB_STATUS_ILLEGAL;
+ 651   2        }
+ 652   1      
+ 653   1        // If the device is not configured and it is not Endpoint 0, we cannot begin
+ 654   1        // a transfer.
+ 655   1        if ((epAddr != EP0) && (myUsbDevice.state != USBD_STATE_CONFIGURED))
+ 656   1        {
+ 657   2          return USB_STATUS_DEVICE_UNCONFIGURED;
+ 658   2        }
+ 659   1      
+ 660   1        ep = GetEp(epAddr);
+ 661   1      
+ 662   1        // If the endpoint is not idle, we cannot start a new transfer.
+ 663   1        // Return the appropriate error code.
+ 664   1        if (ep->state != D_EP_IDLE)
+ 665   1        {
+ 666   2          if (ep->state == D_EP_STALL)
+ 667   2          {
+ 668   3            return USB_STATUS_EP_STALLED;
+ 669   3          }
+ 670   2          else
+ 671   2          {
+ 672   3            return USB_STATUS_EP_BUSY;
+ 673   3          }
+ 674   2        }
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 12  
+
+ 675   1      
+ 676   1        DISABLE_USB_INTS;
+ 677   1      
+ 678   1        ep->buf = dat;
+ 679   1        ep->remaining = byteCount;
+ 680   1        ep->state = D_EP_TRANSMITTING;
+ 681   1        ep->misc.bits.callback = callback;
+ 682   1      
+ 683   1        switch (epAddr)
+ 684   1        {
+ 685   2          // For Endpoint 0, set the inPacketPending flag to true. The USB handler
+ 686   2          // will see this on the next SOF and begin the transfer.
+ 687   2          case (EP0):
+ 688   2            myUsbDevice.ep0.misc.bits.inPacketPending = true;
+ 689   2            break;
+ 690   2      
+ 691   2          // For data endpoints, we will call USB_WriteFIFO here to reduce latency
+ 692   2          // between the call to USBD_Write() and the first packet being sent.
+ 693   2      #if SLAB_USB_EP1IN_USED
+ 694   2          case (EP1IN):
+ 695   2            USB_WriteFIFO(1,
+ 696   2                          (byteCount > SLAB_USB_EP1IN_MAX_PACKET_SIZE) ? SLAB_USB_EP1IN_MAX_PACKET_SIZE : byteCo
+             -unt,
+ 697   2                          myUsbDevice.ep1in.buf,
+ 698   2                          true);
+ 699   2            break;
+ 700   2      #endif // SLAB_USB_EP1IN_USED
+ 701   2      #if SLAB_USB_EP2IN_USED
+ 702   2          case (EP2IN):
+ 703   2            USB_WriteFIFO(2,
+ 704   2                          (byteCount > SLAB_USB_EP2IN_MAX_PACKET_SIZE) ? SLAB_USB_EP2IN_MAX_PACKET_SIZE : byteCo
+             -unt,
+ 705   2                          myUsbDevice.ep2in.buf,
+ 706   2                          true);
+ 707   2            break;
+ 708   2      #endif // SLAB_USB_EP2IN_USED
+ 709   2      #if SLAB_USB_EP3IN_USED
+                  case (EP3IN):
+              #if  ((SLAB_USB_EP3IN_TRANSFER_TYPE == USB_EPTYPE_BULK) || (SLAB_USB_EP3IN_TRANSFER_TYPE == USB_EPTYPE_INT
+             -R))
+                    USB_WriteFIFO(3,
+                                  (byteCount > SLAB_USB_EP3IN_MAX_PACKET_SIZE) ? SLAB_USB_EP3IN_MAX_PACKET_SIZE : byteCo
+             -unt,
+                                  myUsbDevice.ep3in.buf,
+                                  true);
+              #elif (SLAB_USB_EP3IN_TRANSFER_TYPE == USB_EPTYPE_ISOC)
+                    myUsbDevice.ep3in.misc.bits.inPacketPending = true;
+                    myUsbDevice.ep3inIsoIdx = 0;
+              #endif
+                    break;
+              #endif // SLAB_USB_EP3IN_USED
+ 722   2        }
+ 723   1      
+ 724   1        ENABLE_USB_INTS;
+ 725   1        USB_RestoreSfrPage();
+ 726   1      
+ 727   1        return USB_STATUS_OK;
+ 728   1      }
+ 729          
+ 730          // -----------------------------------------------------------------------------
+ 731          // UtilityFunctions
+ 732          
+ 733          void USBD_SetUsbState(USBD_State_TypeDef newState)
+C51 COMPILER V9.60.0.0   EFM8_USBD                                                         12/14/2022 01:42:56 PAGE 13  
+
+ 734          {
+ 735   1      #if (SLAB_USB_SUPPORT_ALT_INTERFACES)
+                uint8_t i;
+              #endif
+ 738   1        USBD_State_TypeDef currentState;
+ 739   1      
+ 740   1        currentState = myUsbDevice.state;
+ 741   1      
+ 742   1        // If the device is un-configuring, disable the data endpoints and clear out
+ 743   1        // alternate interface settings
+ 744   1        if ((currentState >= USBD_STATE_SUSPENDED)
+ 745   1             && (newState < USBD_STATE_SUSPENDED))
+ 746   1        {
+ 747   2          USBD_AbortAllTransfers();
+ 748   2      
+ 749   2      #if (SLAB_USB_SUPPORT_ALT_INTERFACES)
+                  for (i = 0; i < SLAB_USB_NUM_INTERFACES; i++)
+                  {
+                    myUsbDevice.interfaceAltSetting[i] = 0;
+                  }
+              #endif
+ 755   2        }
+ 756   1        if (newState == USBD_STATE_SUSPENDED)
+ 757   1        {
+ 758   2          myUsbDevice.savedState = currentState;
+ 759   2        }
+ 760   1      
+ 761   1        myUsbDevice.state = newState;
+ 762   1      
+ 763   1      #if SLAB_USB_STATE_CHANGE_CB
+ 764   1        if (currentState != newState)
+ 765   1        {
+ 766   2          USBD_DeviceStateChangeCb(currentState, newState);
+ 767   2        }
+ 768   1      #endif
+ 769   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1890    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     58      36
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----      10
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

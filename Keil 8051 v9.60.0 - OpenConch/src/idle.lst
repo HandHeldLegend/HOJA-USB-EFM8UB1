@@ -1,0 +1,153 @@
+C51 COMPILER V9.60.0.0   IDLE                                                              12/14/2022 01:42:55 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE IDLE
+OBJECT MODULE PLACED IN .\src\idle.OBJ
+COMPILER INVOKED BY: C:\SiliconLabs\SimplicityStudio\v5\developer\toolchains\keil_8051\9.60\BIN\C51.exe C:\Users\Mitch\S
+                    -implicityStudio\v5_workspace\HOJA-USB-EFM8UB1\src\idle.c OMF2 LARGE ROM(LARGE) WARNINGLEVEL(2) FLOATFUZZY(3) OPTIMIZE(9,
+                    -SIZE) DEFINE(NDEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-EFM8UB1
+                    -\inc;C:\Users\Mitch\SimplicityStudio\v5_workspace\HOJA-USB-EFM8UB1\inc\config;C:/SiliconLabs/SimplicityStudio/v5/develop
+                    -er/sdks/8051/v4.2.4//Lib/efm8_assert;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_usb/inc;C:/
+                    -SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/peripheral_driver/inc;C:/SiliconLabs/Simplici
+                    -tyStudio/v5/developer/sdks/8051/v4.2.4//Lib/efm8_usbc/lib_kernel/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8
+                    -051/v4.2.4//Lib/efm8_usbc/lib_usbc_pd/inc;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/shared/s
+                    -i8051Base;C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/inc) REGFILE(HOJA-USB-EFM8UB1.OR
+                    -C) PRINT(.\src\idle.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OA OBJECT(.\src\idle.OBJ)
+
+line level    source
+
+   1          /**************************************************************************//**
+   2           * Copyright (c) 2015 by Silicon Laboratories Inc. All rights reserved.
+   3           *
+   4           * http://developer.silabs.com/legal/version/v11/Silicon_Labs_Software_License_Agreement.txt
+   5           *****************************************************************************/
+   6          /////////////////////////////////////////////////////////////////////////////
+   7          // idle.c
+   8          /////////////////////////////////////////////////////////////////////////////
+   9          
+  10          /////////////////////////////////////////////////////////////////////////////
+  11          // Includes
+  12          /////////////////////////////////////////////////////////////////////////////
+  13          
+  14          #include "idle.h"
+  15          
+  16          /////////////////////////////////////////////////////////////////////////////
+  17          // Variables
+  18          /////////////////////////////////////////////////////////////////////////////
+  19          
+  20          static idleTimer_TypeDef idle;
+  21          
+  22          /////////////////////////////////////////////////////////////////////////////
+  23          // Functions
+  24          /////////////////////////////////////////////////////////////////////////////
+  25          
+  26          /**************************************************************************//**
+  27           * Start the idle timer
+  28           *****************************************************************************/
+  29          void idleTimerStart(void)
+  30          {
+  31   1        // idle duration between 4 ms and 1020 ms
+  32   1        if (idle.duration > 0)
+  33   1        {
+  34   2          idle.timer = (uint16_t)idle.duration * 2;
+  35   2        }
+  36   1        // idle duration is infinite
+  37   1        else
+  38   1        {
+  39   2          idle.timer = 0;
+  40   2        }
+  41   1      }
+  42          
+  43          /**************************************************************************//**
+  44           * Returns true if the idle duration timer has expired
+  45           *****************************************************************************/
+  46          bool isIdleTimerIndefinite(void)
+  47          {
+C51 COMPILER V9.60.0.0   IDLE                                                              12/14/2022 01:42:55 PAGE 2   
+
+  48   1        // Infinite duration
+  49   1        if (idle.duration == 0)
+  50   1        {
+  51   2          return true;
+  52   2        }
+  53   1        else
+  54   1        {
+  55   2          return false;
+  56   2        }
+  57   1      }
+  58          
+  59          /**************************************************************************//**
+  60           * Returns true if the idle duration timer has expired
+  61           * @return true - idle timer has expired, restart the timer
+  62           *****************************************************************************/
+  63          bool isIdleTimerExpired(void)
+  64          {
+  65   1        if (!isIdleTimerIndefinite() && idle.timer == 0)
+  66   1        {
+  67   2          idleTimerStart();
+  68   2          return true;
+  69   2        }
+  70   1      
+  71   1        return false;
+  72   1      }
+  73          
+  74          /**************************************************************************//**
+  75           * Set the HID idle duration for all report IDs
+  76           * @param duration idle duration in units of 4 ms
+  77           * (0 = infinite; 4 ms to 1020 ms)
+  78           *****************************************************************************/
+  79          void idleSetDuration(uint8_t duration)
+  80          {
+  81   1        // If the desired idle duration is less than the polling rate,
+  82   1        // then set the idle duration equal to the polling rate
+  83   1        if ((duration != 0) && (duration < POLL_RATE_MS / 4))
+  84   1        {
+  85   2          idle.duration = POLL_RATE_MS / 4;
+  86   2        }
+  87   1        else
+  88   1        {
+  89   2          idle.duration = duration;
+  90   2        }
+  91   1      
+  92   1        idleTimerStart();
+  93   1      }
+  94          
+  95          /**************************************************************************//**
+  96           * Tick the idle timer by 1 ms tick (sync with SOF)
+  97           *****************************************************************************/
+  98          void idleTimerTick(void)
+  99          {
+ 100   1        if (idle.timer > 0)
+ 101   1        {
+ 102   2          idle.timer--;
+ 103   2        }
+ 104   1      }
+ 105          
+ 106          /**************************************************************************//**
+ 107           * Get the HID idle duration for all report IDs
+ 108           * @return idle duration in units of 4 ms (0 = infinite; 4 ms to 1020 ms)
+ 109           *****************************************************************************/
+ 110          uint8_t idleGetDuration(void)
+C51 COMPILER V9.60.0.0   IDLE                                                              12/14/2022 01:42:55 PAGE 3   
+
+ 111          {
+ 112   1        return idle.duration;
+ 113   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    141    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      3    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
