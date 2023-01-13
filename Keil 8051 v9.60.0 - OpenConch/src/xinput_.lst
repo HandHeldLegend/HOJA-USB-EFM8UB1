@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   XINPUT_                                                           12/14/2022 01:42:55 PAGE 1   
+C51 COMPILER V9.60.0.0   XINPUT_                                                           01/12/2023 16:52:34 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE XINPUT_
@@ -63,7 +63,7 @@ line level    source
   43   2            xinput_reportBuffer.analog_trigger_r = (i2c_input_buffer.rt_a << 2);
   44   2        }
   45   1      
-C51 COMPILER V9.60.0.0   XINPUT_                                                           12/14/2022 01:42:55 PAGE 2   
+C51 COMPILER V9.60.0.0   XINPUT_                                                           01/12/2023 16:52:34 PAGE 2   
 
   46   1        xinput_reportBuffer.buttons_1.button_menu     = i2c_input_buffer.buttons_2.button_start;
   47   1        xinput_reportBuffer.buttons_1.button_back     = i2c_input_buffer.buttons_2.button_select;

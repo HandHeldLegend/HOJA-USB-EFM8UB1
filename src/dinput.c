@@ -14,6 +14,8 @@ void dinputUpdateReport()
   uint8_t lr = 1;
   uint8_t ud = 1;
 
+  dinput_reportBuffer.report_id = 0x01;
+
   // Set all the right bits
   dinput_reportBuffer.buttons_1.button_a    = i2c_input_buffer.buttons_1.button_right;
   dinput_reportBuffer.buttons_1.button_b    = i2c_input_buffer.buttons_1.button_down;
@@ -43,7 +45,7 @@ void dinputUpdateReport()
   lr = 1 - i2c_input_buffer.buttons_1.dpad_left + i2c_input_buffer.buttons_1.dpad_right;
   ud = 1 - i2c_input_buffer.buttons_1.dpad_down + i2c_input_buffer.buttons_1.dpad_up;
 
-  nspro_reportBuffer.dpad_hat    = (uint8_t) getHatDir(DPAD_TYPE_DINPUT, lr, ud);
+  dinput_reportBuffer.dpad_hat    = (uint8_t) getHatDir(DPAD_TYPE_DINPUT, lr, ud);
 
   if (sendReport)
   {

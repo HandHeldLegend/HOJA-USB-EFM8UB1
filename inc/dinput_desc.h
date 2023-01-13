@@ -17,7 +17,7 @@
 #define DINPUT_PROD_STRING   'D','I',' ','W','i','r','e','d','\0'
 #define DINPUT_PROD_SIZE     9
 
-#define DINPUT_HID_SIZE      98
+#define DINPUT_HID_SIZE      125
 
 // Dinput externs
 extern SI_SEGMENT_VARIABLE(dinput_hid_descriptor[DINPUT_HID_SIZE], const uint8_t, SI_SEG_CODE);

@@ -15,6 +15,8 @@
 // Input structure for Nintendo Switch USB gamepad Data
 typedef struct dinput_input
 {
+  uint8_t report_id;
+
   struct
   {
    uint8_t button_y    : 1;
@@ -45,7 +47,6 @@ typedef struct dinput_input
   uint8_t stick_right_y;
   uint8_t trigger_left_analog;
   uint8_t trigger_right_analog;
-  uint8_t dummy_2;
 
 } dinput_input_s;
 
