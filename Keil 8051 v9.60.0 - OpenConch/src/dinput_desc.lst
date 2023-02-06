@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   DINPUT_DESC                                                       01/12/2023 16:52:33 PAGE 1   
+C51 COMPILER V9.60.0.0   DINPUT_DESC                                                       02/05/2023 22:19:44 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE DINPUT_DESC
@@ -63,7 +63,7 @@ line level    source
   41                          0x75, 0x04,        //   Report Size (4)
   42                          0x95, 0x01,        //   Report Count (1)
   43                          0x65, 0x14,        //   Unit (System: English Rotation, Length: Centimeter)
-C51 COMPILER V9.60.0.0   DINPUT_DESC                                                       01/12/2023 16:52:33 PAGE 2   
+C51 COMPILER V9.60.0.0   DINPUT_DESC                                                       02/05/2023 22:19:44 PAGE 2   
 
   44                          0x09, 0x39,        //   Usage (Hat switch)
   45                          0x81, 0x42,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,Null State)
@@ -95,7 +95,7 @@ line level    source
   69                          0x15, 0x00,            //            LOGICAL_MINIMUM (0)
   70                          0x26, 0xff, 0x00,       //            LOGICAL_MAXIMUM (255)
   71                          0x75, 0x08,            //            REPORT_SIZE (8)
-  72                          0x95, 0x09,            //            REPORT_COUNT (11)
+  72                          0x95, 0x08,            //            REPORT_COUNT (8)
   73                          0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Positio
              -n)
   74                      0xc0,
@@ -107,7 +107,7 @@ line level    source
   80                          0x15, 0x00,            //            LOGICAL_MINIMUM (0)
   81                          0x26, 0xff, 0x00,       //            LOGICAL_MAXIMUM (255)
   82                          0x75, 0x08,            //            REPORT_SIZE (8)
-  83                          0x95, 0x0B,            //            REPORT_COUNT (11)
+  83                          0x95, 0x08,            //            REPORT_COUNT (8)
   84                          0x91, 0x02,            //            OUTPUT (Data,Var,Abs)
   85                      0xc0,
   86                  // 125 bytes
@@ -128,7 +128,7 @@ line level    source
  101            64,                              // bMaxPacketSize
  102            NSPRO_VENDOR_ID,                   // idVendor
  103            NSPRO_PROD_ID,                  // idProduct
-C51 COMPILER V9.60.0.0   DINPUT_DESC                                                       01/12/2023 16:52:33 PAGE 3   
+C51 COMPILER V9.60.0.0   DINPUT_DESC                                                       02/05/2023 22:19:44 PAGE 3   
 
  104            htole16(0x0100),                 // bcdDevice
  105            1,                               // iManufacturer
@@ -193,7 +193,7 @@ line level    source
  164              0x40,                            // wMaxPacketSize (LSB)
  165              0x00,                            // wMaxPacketSize (MSB)
  166              0x02,                            // bInterval (2ms)
-C51 COMPILER V9.60.0.0   DINPUT_DESC                                                       01/12/2023 16:52:33 PAGE 4   
+C51 COMPILER V9.60.0.0   DINPUT_DESC                                                       02/05/2023 22:19:44 PAGE 4   
 
  167          };
  168          

@@ -8,67 +8,176 @@
 #include "gamepad.h"
 
 Gamepad_USB_Subcore_TypeDef gamepadSubcore = USB_SUBCORE_DINPUT;
-Gamepad_System_Status_TypeDef gamepadStatus = GAMEPAD_STATUS_NOCONNECT;
+Gamepad_System_Status_TypeDef gamepadStatus = GAMEPAD_STATUS_IDLE;
+USB_System_Status_TypeDef usbStatus = USB_STATUS_NOBUS;
+bool gamepadRumble = false;
 bool sendReport = false;
 
+// Stop the USB mode from running if it's running
+void gamepadStop()
+{
+  // Clear USB if we are already running.
+  if (gamepadStatus != GAMEPAD_STATUS_IDLE)
+  {
+    // Stop the current USB and change the mode.
+    sendReport = false;
+    USBD_Stop();
+    gamepadStatus = GAMEPAD_STATUS_IDLE;
+  }
+}
+
+// Handle an I2C gamepad command
 void gamepadCmd()
 {
-  switch (rx_buffer[I2CB_COMMAND_IDX])
+  // Check the command byte which is the first byte of the I2C rx
+  switch (rx_buffer[I2C_COMMAND_IDX])
   {
     default:
-    case I2CB_CMD_CHECKREADY:
-      gamepadCheckReady();
+    case I2C_CMD_IDLE:
+      memset(&tx_buffer, 0, sizeof(tx_buffer));
       break;
-    case I2CB_CMD_SYSTEMSET:
-      gamepadSysSet((Gamepad_System_Set_TypeDef) rx_buffer[I2CB_DATA_IDX]);
+
+    case I2C_CMD_STATUS:
+      gamepadCheckStatus();
       break;
-    case I2CB_CMD_INPUT:
+
+    case I2C_CMD_SETMODE:
+      gamepadReturnCmd(I2C_RETURN_CMD_IDLE);
+      gamepadModeSet((I2C_Command_Setmode_TypeDef) rx_buffer[I2C_SUBCMD_IDX]);
+      break;
+
+    case I2C_CMD_SETUSB:
+      gamepadReturnCmd(I2C_RETURN_CMD_IDLE);
+      gamepadUSBModeSet((Gamepad_USB_Subcore_TypeDef) rx_buffer[I2C_SUBCMD_IDX]);
+      break;
+
+    case I2C_CMD_INPUT:
+      gamepadReturnCmd(I2C_RETURN_CMD_RUMBLE);
       gamepadInput();
       break;
+
+    case I2C_CMD_CONFIG:
+      gamepadReturnCmd(I2C_RETURN_CMD_CONFIG);
+      gamepadConfigInput();
+      break;
   }
 }
 
-void gamepadCheckReady()
+void gamepadCheckStatus()
 {
-    tx_buffer[I2CB_COMMAND_IDX] = 0x00;
-    tx_buffer[I2CB_DATA_IDX] = gamepadStatus;
-    tx_idx = 0;
-    tx_remaining = 2;
+  gamepadReturnCmd(I2C_RETURN_CMD_STATUS);
 }
 
-void gamepadSysSet(Gamepad_System_Set_TypeDef setting)
+// Handle a system command. Stop, start, or reset.
+void gamepadModeSet(I2C_Command_Setmode_TypeDef cmd)
 {
-  I2C_Response_Messsage_TypeDef ret = I2CB_FAIL;
   uint8_t usbret = USB_STATUS_OK;
 
-  switch (setting)
+  switch(cmd)
   {
-    default:
-    case SYSTEM_SET_STARTUSB:
-      ret = gamepadSetSubcore((Gamepad_USB_Subcore_TypeDef) rx_buffer[I2CB_SUBCORE_IDX]);
-      break;
-    case SYSTEM_SET_STOPUSB:
-      USBD_Stop();
-      ret = I2CB_OK;
-      break;
-    case SYSTEM_SET_SLEEPUSB:
-      USBD_Stop();
-      ret = I2CB_OK;
-      break;
-    case SYSTEM_SET_RESETUSB:
-      USBD_Stop();
-      ret = I2CB_OK;
-      RSTSRC |= RSTSRC_SWRSF__BMASK;
-      break;
-  }
+      default:
+      case I2C_SETMODE_STOP:
+        gamepadStop();
+        break;
 
-  tx_buffer[I2CB_COMMAND_IDX] = ret;
-  tx_idx = 0;
-  tx_remaining = 1;
+      case I2C_SETMODE_START:
+        gamepadStop();
+
+        switch(gamepadSubcore)
+        {
+          default:
+              break;
+
+          case USB_SUBCORE_DINPUT:
+              // Start USB
+              usbret = USBD_Init(&dinput_init_struct);
+              if (usbret != USB_STATUS_OK)
+              {
+                // Change nothing if we fail
+                return;
+              }
+              else if (usbret == USB_STATUS_OK)
+              {
+                gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
+                sendReport = true;
+                return;
+              }
+              break;
+
+          case USB_SUBCORE_NS:
+              // Start USB
+              usbret = USBD_Init(&nspro_init_struct);
+              if (usbret != USB_STATUS_OK)
+              {
+                // Change nothing if we fail
+                return;
+              }
+              else if (usbret == USB_STATUS_OK)
+              {
+                gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
+                sendReport = true;
+                return;
+              }
+              break;
+
+          case USB_SUBCORE_XINPUT:
+              // Start USB
+              usbret = USBD_Init(&xinput_init_struct);
+              if (usbret != USB_STATUS_OK)
+              {
+                // Change nothing if we fail
+                return;
+              }
+              else if (usbret == USB_STATUS_OK)
+              {
+                gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
+                sendReport = true;
+                return;
+              }
+              break;
+
+          case USB_SUBCORE_GCINPUT:
+              // Start USB
+              usbret = USBD_Init(&nspro_init_struct);
+              if (usbret != USB_STATUS_OK)
+              {
+                // Change nothing if we fail
+                return;
+              }
+              else if (usbret == USB_STATUS_OK)
+              {
+                gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
+                sendReport = true;
+                return;
+              }
+              break;
+        }
+        break;
+
+      case I2C_SETMODE_RESET:
+        gamepadModeSet(I2C_SETMODE_STOP);
+        gamepadModeSet(I2C_SETMODE_START);
+        break;
+  }
 }
 
+// Set the USB Gamepad mode
+void gamepadUSBModeSet(Gamepad_USB_Subcore_TypeDef coreType)
+{
+    // Make sure we are IDLE
+    gamepadStop();
+    gamepadSubcore = USB_SUBCORE_IDLE;
+    gamepadSubcore = coreType;
+}
+
+// Send a USB Input report with gamepad data
 void gamepadInput()
 {
+  if (usbStatus != USB_STATUS_BUSOK)
+  {
+    return;
+  }
+
   memcpy(&i2c_input_buffer, &rx_buffer[1], I2C_INPUT_SIZE);
   switch(gamepadSubcore)
   {
@@ -87,69 +196,36 @@ void gamepadInput()
   }
 }
 
-I2C_Response_Messsage_TypeDef gamepadSetSubcore(Gamepad_USB_Subcore_TypeDef mode)
+// Send a USB Input report with config data
+void gamepadConfigInput()
 {
-  uint8_t usbret = USB_STATUS_OK;
-  I2C_Response_Messsage_TypeDef ret = I2CB_FAIL;
-  switch (mode)
+
+}
+
+
+// Pass through config data request to I2C
+void gamepadReturnCmd(I2C_Return_Command_TypeDef ret_cmd)
+{
+  // Clear TX buffer first
+  memset(&tx_buffer, 0, sizeof(tx_buffer));
+
+  switch(ret_cmd)
   {
     default:
-    case USB_SUBCORE_DINPUT:
-      usbret = USBD_Init(&dinput_init_struct);
-      if (usbret != USB_STATUS_OK)
-      {
-        ret = I2CB_FAIL;
-      }
-      else if (usbret == USB_STATUS_OK)
-      {
-        gamepadSubcore = USB_SUBCORE_DINPUT;
-        ret = I2CB_OK;
-        sendReport = true;
-      }
       break;
 
-    case USB_SUBCORE_NS:
-      usbret = USBD_Init(&nspro_init_struct);
-      if (usbret != USB_STATUS_OK)
-      {
-        ret = I2CB_FAIL;
-      }
-      else if (usbret == USB_STATUS_OK)
-      {
-        ret = I2CB_OK;
-        gamepadSubcore = USB_SUBCORE_NS;
-        sendReport = true;
-      }
+    case I2C_RETURN_CMD_STATUS:
+      tx_buffer[I2C_COMMAND_IDX] = I2C_RETURN_CMD_STATUS;
+      tx_buffer[I2C_DATA_IDX] = usbStatus;
+      tx_buffer[I2C_DATA_IDX+1] = gamepadStatus;
       break;
 
-    case USB_SUBCORE_XINPUT:
-      usbret = USBD_Init(&xinput_init_struct);
-      if (usbret != USB_STATUS_OK)
-      {
-        ret = I2CB_FAIL;
-      }
-      else if (usbret == USB_STATUS_OK)
-      {
-        ret = I2CB_OK;
-        gamepadSubcore = USB_SUBCORE_XINPUT;
-        sendReport = true;
-      }
-      break;
-
-    case USB_SUBCORE_GCINPUT:
-      usbret = USBD_Init(&nspro_init_struct);
-      if (usbret != USB_STATUS_OK)
-      {
-        ret = I2CB_FAIL;
-      }
-      else if (usbret == USB_STATUS_OK)
-      {
-        ret = I2CB_OK;
-        gamepadSubcore = USB_SUBCORE_NS;
-        sendReport = true;
-      }
+    case I2C_RETURN_CMD_RUMBLE:
+      tx_buffer[I2C_COMMAND_IDX] = I2C_RETURN_CMD_RUMBLE;
+      tx_buffer[I2C_DATA_IDX] = gamepadRumble;
       break;
   }
 
-  return ret;
+  tx_idx = 0;
+  tx_remaining = 11;
 }

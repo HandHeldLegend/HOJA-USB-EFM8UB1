@@ -6,6 +6,8 @@
  */
 
 #include "i2cbridge.h"
+#include <stdio.h>
+#include <string.h>
 
 uint8_t rx_buffer[11] = {0};
 uint8_t rx_idx = 0;
@@ -13,9 +15,9 @@ uint8_t rx_remaining = 9;
 
 bool rx_complete = false;
 
-uint8_t tx_buffer[4] = {0};
+uint8_t tx_buffer[11] = {0};
 uint8_t tx_idx = 0;
-uint8_t tx_remaining = 4;
+uint8_t tx_remaining = 9;
 
 i2c_input_s i2c_input_buffer = {0};
 
@@ -79,6 +81,7 @@ SI_INTERRUPT(I2C0_ISR, I2C0_IRQn)
       I2C0STAT &= ~I2C0STAT_STOP__BMASK;
       //
       //  STOP Condition received.
+      //memset(&tx_buffer, 0, 11);
       //
       break;
     default:
@@ -93,21 +96,7 @@ SI_INTERRUPT(I2C0_ISR, I2C0_IRQn)
 
       if (rx_idx == 0)
       {
-        switch(rx_buffer[0])
-        {
-          default:
-            rx_remaining = 2;
-            break;
-          case I2CB_CMD_SYSTEMSET:
-            rx_remaining = 3;
-            break;
-          case I2CB_CMD_CHECKREADY:
-            rx_remaining = 1;
-            break;
-          case I2CB_CMD_INPUT:
-            rx_remaining = 10;
-            break;
-        }
+          rx_remaining = 10;
       }
 
       rx_idx += 1;

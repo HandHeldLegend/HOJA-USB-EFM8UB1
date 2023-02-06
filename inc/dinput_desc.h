@@ -12,12 +12,15 @@
 
 // DInput defines
 #define DINPUT_VENDOR_ID  htole16( 0x20D6 )
-#define DINPUT_PROD_ID    htole16( 0xA713 )
+#define DINPUT_PROD_ID    htole16( 0xA715 )
 
 #define DINPUT_PROD_STRING   'D','I',' ','W','i','r','e','d','\0'
 #define DINPUT_PROD_SIZE     9
 
 #define DINPUT_HID_SIZE      125
+
+// 1 report ID byte + 8 bytes of data
+#define DINPUT_CONFIG_REPORT_BYTES 9
 
 // Dinput externs
 extern SI_SEGMENT_VARIABLE(dinput_hid_descriptor[DINPUT_HID_SIZE], const uint8_t, SI_SEG_CODE);

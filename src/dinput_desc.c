@@ -69,7 +69,7 @@ extern SI_SEGMENT_VARIABLE(dinput_hid_descriptor[DINPUT_HID_SIZE],
                 0x15, 0x00,            //            LOGICAL_MINIMUM (0)
                 0x26, 0xff, 0x00,       //            LOGICAL_MAXIMUM (255)
                 0x75, 0x08,            //            REPORT_SIZE (8)
-                0x95, 0x09,            //            REPORT_COUNT (11)
+                0x95, 0x08,            //            REPORT_COUNT (8)
                 0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
             0xc0,
 
@@ -80,7 +80,7 @@ extern SI_SEGMENT_VARIABLE(dinput_hid_descriptor[DINPUT_HID_SIZE],
                 0x15, 0x00,            //            LOGICAL_MINIMUM (0)
                 0x26, 0xff, 0x00,       //            LOGICAL_MAXIMUM (255)
                 0x75, 0x08,            //            REPORT_SIZE (8)
-                0x95, 0x0B,            //            REPORT_COUNT (11)
+                0x95, 0x08,            //            REPORT_COUNT (8)
                 0x91, 0x02,            //            OUTPUT (Data,Var,Abs)
             0xc0,
         // 125 bytes

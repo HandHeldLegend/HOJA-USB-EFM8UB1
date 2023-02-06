@@ -60,16 +60,16 @@ USBD_DeviceStateChangeCb (USBD_State_TypeDef oldState,
 {
   if (newState == USBD_STATE_CONFIGURED)
   {
-    gamepadStatus = GAMEPAD_STATUS_READY;
+      usbStatus = USB_STATUS_BUSOK;
     idleSetDuration(0);
   }
   else if (newState == USBD_STATE_ATTACHED)
   {
-    gamepadStatus = GAMEPAD_STATUS_NOCONNECT;
+      usbStatus = USB_STATUS_NOBUS;
   }
   else if (newState == USBD_STATE_SUSPENDED || newState == USBD_STATE_NONE)
   {
-    gamepadStatus = GAMEPAD_STATUS_NOCONNECT;
+      usbStatus = USB_STATUS_NOBUS;
   }
 }
 

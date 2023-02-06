@@ -40,7 +40,7 @@ main (void)
 
   // Call hardware initialization routine
   enter_DefaultMode_from_RESET ();
-  gamepadStatus = GAMEPAD_STATUS_NOCONNECT;
+  gamepadStatus = GAMEPAD_STATUS_IDLE;
 
   while (1)
     {
