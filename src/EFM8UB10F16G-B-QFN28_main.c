@@ -42,6 +42,9 @@ main (void)
   enter_DefaultMode_from_RESET ();
   gamepadStatus = GAMEPAD_STATUS_IDLE;
 
+  gamepadUSBModeSet(USB_SUBCORE_XINPUT);
+  gamepadModeSet(I2C_SETMODE_START);
+
   while (1)
     {
 // $[Generated Run-time code]

@@ -15,7 +15,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <efm8_usb.h>
-#include <xinput_.h>
+
 #include "idle.h"
 #include "smb_0.h"
 
@@ -27,9 +27,10 @@
 #include "descriptors.h"
 #include "dinput_desc.h"
 #include "nspro_desc.h"
-#include "xinput_desc.h"
+#include "xinput_legacy_desc.h"
 
 #include "nspro.h"
 #include "dinput.h"
+#include "xinput_legacy.h"
 
 #endif /* INC_USB_INCLUDES_H_ */

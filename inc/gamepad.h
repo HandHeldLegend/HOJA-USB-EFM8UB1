@@ -11,38 +11,17 @@
 // Includes for HHL Gamepad
 #include "usb_includes.h"
 
+// Variables for system tracking
+extern usb_subcore_t gamepadSubcore;
+extern ui2c_gamepad_status_t gamepadStatus;
+extern ui2c_usb_status_t usbStatus;
+
 extern bool sendReport;
 
-// Defines for i2c custom protocol information
-#define I2C_SLAVE_ADDR    0x45
-
-typedef enum
-{
-  GAMEPAD_STATUS_IDLE,
-  GAMEPAD_STATUS_INITIALIZED,
-} Gamepad_System_Status_TypeDef;
-
-typedef enum
-{
-  USB_STATUS_NOBUS,
-  USB_STATUS_BUSOK,
-} USB_System_Status_TypeDef;
-
-typedef enum
-{
-  USB_SUBCORE_IDLE    = 0,
-  USB_SUBCORE_DINPUT  = 1,
-  USB_SUBCORE_NS      = 2,
-  USB_SUBCORE_XINPUT  = 3,
-  USB_SUBCORE_GCINPUT = 4,
-  USB_SUBCORE_MAX,
-} Gamepad_USB_Subcore_TypeDef;
-
-// Variables for system tracking
-extern Gamepad_USB_Subcore_TypeDef gamepadSubcore;
-extern Gamepad_System_Status_TypeDef gamepadStatus;
-extern USB_System_Status_TypeDef usbStatus;
-extern bool gamepadRumble;
+extern bool gpRumble;
+extern bool gpConfigRequest;
+extern bool gpConfigWrite;
+extern uint8_t gpConfigData[8];
 
 void gamepadStop();
 
@@ -50,9 +29,9 @@ void gamepadCmd();
 
 void gamepadCheckStatus();
 
-void gamepadModeSet(I2C_Command_Setmode_TypeDef cmd);
+void gamepadModeSet(ui2c_setmode_t cmd);
 
-void gamepadUSBModeSet(Gamepad_USB_Subcore_TypeDef coreType);
+void gamepadUSBModeSet(usb_subcore_t coreType);
 
 void gamepadInput();
 
@@ -60,6 +39,6 @@ void gamepadConfigInput();
 
 void gamepadConfigOutput();
 
-void gamepadReturnCmd(I2C_Return_Command_TypeDef ret_cmd);
+void gamepadReturnCmd();
 
 #endif /* INC_GAMEPAD_H_ */

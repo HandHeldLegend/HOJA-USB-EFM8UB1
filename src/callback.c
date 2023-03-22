@@ -61,14 +61,18 @@ USBD_DeviceStateChangeCb (USBD_State_TypeDef oldState,
   if (newState == USBD_STATE_CONFIGURED)
   {
       usbStatus = USB_STATUS_BUSOK;
-    idleSetDuration(0);
+      sendReport = true;
+      idleSetDuration(0);
   }
   else if (newState == USBD_STATE_ATTACHED)
   {
-      usbStatus = USB_STATUS_NOBUS;
+      //gamepadStop();
+      usbStatus = USB_STATUS_ATTACHED;
   }
   else if (newState == USBD_STATE_SUSPENDED || newState == USBD_STATE_NONE)
   {
+      //gamepadStop();
+      sendReport = false;
       usbStatus = USB_STATUS_NOBUS;
   }
 }
@@ -79,7 +83,6 @@ USBD_IsSelfPoweredCb (void)
 
   return false;
 }
-
 
 
 uint8_t tmpUSBBuffer;
@@ -121,12 +124,6 @@ USBD_SetupCmdCb (SI_VARIABLE_SEGMENT_POINTER
                                EFM8_MIN(sizeof(nspro_hid_descriptor), setup->wLength),
                                false);
                       break;
-                  case (USB_SUBCORE_XINPUT):
-                      USBD_Write(EP0,
-                               (SI_VARIABLE_SEGMENT_POINTER(, uint8_t, SI_SEG_GENERIC))xinput_hid_descriptor,
-                               EFM8_MIN(sizeof(xinput_hid_descriptor), setup->wLength),
-                               false);
-                      break;
                 }
                 retVal = USB_STATUS_OK;
                 break;
@@ -156,12 +153,6 @@ USBD_SetupCmdCb (SI_VARIABLE_SEGMENT_POINTER
                   case (USB_SUBCORE_NS):
                       USBD_Write(EP0,
                                (SI_VARIABLE_SEGMENT_POINTER(, uint8_t, SI_SEG_GENERIC))(&nspro_config_descriptor[18]),
-                               EFM8_MIN(USB_HID_DESCSIZE, setup->wLength),
-                               false);
-                      break;
-                  case (USB_SUBCORE_XINPUT):
-                      USBD_Write(EP0,
-                               (SI_VARIABLE_SEGMENT_POINTER(, uint8_t, SI_SEG_GENERIC))(&xinput_config_descriptor[18]),
                                EFM8_MIN(USB_HID_DESCSIZE, setup->wLength),
                                false);
                       break;
@@ -216,6 +207,7 @@ USBD_SetupCmdCb (SI_VARIABLE_SEGMENT_POINTER
           // Report ID
           // 0  - Idle duration applies to all report IDs
           // >0 - Idle duration applies to specified report ID only (not supported)
+          /*
           if (((setup->wValue & 0xFF) == 0)
               && (setup->wLength == 0)
               && (setup->bmRequestType.Direction != USB_SETUP_DIR_IN))
@@ -224,9 +216,11 @@ USBD_SetupCmdCb (SI_VARIABLE_SEGMENT_POINTER
             //idleSetDuration(setup->wValue >> 8);
             retVal = USB_STATUS_OK;
           }
+          */
           break;
 
         case USB_HID_GET_IDLE:
+          /*
           if ((setup->wValue == 0)                      // Report ID
               && (setup->wLength == 1)
               && (setup->bmRequestType.Direction == USB_SETUP_DIR_IN))
@@ -235,6 +229,7 @@ USBD_SetupCmdCb (SI_VARIABLE_SEGMENT_POINTER
             USBD_Write(EP0, &tmpUSBBuffer, 1, false);
             retVal = USB_STATUS_OK;
           }
+          */
           break;
       }
     }

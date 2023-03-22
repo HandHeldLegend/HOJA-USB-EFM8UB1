@@ -20,6 +20,7 @@ uint8_t tx_idx = 0;
 uint8_t tx_remaining = 9;
 
 i2c_input_s i2c_input_buffer = {0};
+ui2c_return_msg_s ui2c_return_msg = {0};
 
 //-----------------------------------------------------------------------------
 // I2C0_ISR

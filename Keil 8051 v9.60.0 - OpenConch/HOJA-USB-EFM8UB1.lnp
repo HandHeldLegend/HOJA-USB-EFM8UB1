@@ -18,6 +18,6 @@
 "./src/nspro.OBJ",
 "./src/nspro_desc.OBJ",
 "./src/usb_includes.OBJ",
-"./src/xinput_.OBJ",
-"./src/xinput_desc.OBJ"
+"./src/xinput_legacy.OBJ",
+"./src/xinput_legacy_desc.OBJ"
 TO "HOJA-USB-EFM8UB1.OMF.CRBUILD" REMOVEUNUSED PRINT(.\HOJA-USB-EFM8UB1.m51) PAGEWIDTH (120) PAGELENGTH (65) CLASSES( ECODE(C:0x0 - C:0x3ffe), HCONST(C:0x0 - C:0x3ffe), XDATA(X:0x0 - X:0x3ff), HDATA(X:0x0 - X:0x3ff))

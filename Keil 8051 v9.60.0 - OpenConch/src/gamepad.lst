@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   GAMEPAD                                                           02/05/2023 22:19:44 PAGE 1   
+C51 COMPILER V9.60.0.0   GAMEPAD                                                           03/21/2023 20:03:58 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE GAMEPAD
@@ -27,242 +27,251 @@ line level    source
 *** WARNING C318 IN LINE 11 OF C:/SiliconLabs/SimplicityStudio/v5/developer/sdks/8051/v4.2.4//Device/EFM8UB1/peripheral_
              -driver/inc\smb_0.h: can't open file 'efm8_config.h'
    9          
-  10          Gamepad_USB_Subcore_TypeDef gamepadSubcore = USB_SUBCORE_DINPUT;
-  11          Gamepad_System_Status_TypeDef gamepadStatus = GAMEPAD_STATUS_IDLE;
-  12          USB_System_Status_TypeDef usbStatus = USB_STATUS_NOBUS;
-  13          bool gamepadRumble = false;
+  10          usb_subcore_t gamepadSubcore = USB_SUBCORE_DINPUT;
+  11          ui2c_gamepad_status_t gamepadStatus = GAMEPAD_STATUS_IDLE;
+  12          ui2c_usb_status_t usbStatus = USB_STATUS_NOBUS;
+  13          
   14          bool sendReport = false;
   15          
-  16          // Stop the USB mode from running if it's running
-  17          void gamepadStop()
-  18          {
-  19   1        // Clear USB if we are already running.
-  20   1        if (gamepadStatus != GAMEPAD_STATUS_IDLE)
-  21   1        {
-  22   2          // Stop the current USB and change the mode.
-  23   2          sendReport = false;
-  24   2          USBD_Stop();
-  25   2          gamepadStatus = GAMEPAD_STATUS_IDLE;
-  26   2        }
-  27   1      }
-  28          
-  29          // Handle an I2C gamepad command
-  30          void gamepadCmd()
-  31          {
-  32   1        // Check the command byte which is the first byte of the I2C rx
-  33   1        switch (rx_buffer[I2C_COMMAND_IDX])
-  34   1        {
-  35   2          default:
-  36   2          case I2C_CMD_IDLE:
-  37   2            memset(&tx_buffer, 0, sizeof(tx_buffer));
-  38   2            break;
-  39   2      
-  40   2          case I2C_CMD_STATUS:
-  41   2            gamepadCheckStatus();
+  16          bool gpRumble         = false; // Flag that toggles rumble on/off
+  17          bool gpConfigRequest  = false; // Flag that tells the I2C master to send back config data
+  18          bool gpConfigWrite    = false; // Flag that tells the I2C master to write config data
+  19          uint8_t gpConfigData[8] = {0}; // Tmp storage for what data to send
+  20          
+  21          // Stop the USB mode from running if it's running
+  22          void gamepadStop()
+  23          {
+  24   1        // Clear USB if we are already running.
+  25   1        if (gamepadStatus != GAMEPAD_STATUS_IDLE)
+  26   1        {
+  27   2          // Stop the current USB and change the mode.
+  28   2          sendReport = false;
+  29   2          USBD_Stop();
+  30   2          gamepadStatus = GAMEPAD_STATUS_IDLE;
+  31   2        }
+  32   1      }
+  33          
+  34          // Handle an I2C gamepad command
+  35          void gamepadCmd()
+  36          {
+  37   1        // Check the command byte which is the first byte of the I2C rx
+  38   1        switch (rx_buffer[I2C_COMMAND_IDX])
+  39   1        {
+  40   2          default:
+  41   2          case I2C_SYSCMD_IDLE:
   42   2            break;
   43   2      
-  44   2          case I2C_CMD_SETMODE:
-  45   2            gamepadModeSet((I2C_Command_Setmode_TypeDef) rx_buffer[I2C_SUBCMD_IDX]);
-C51 COMPILER V9.60.0.0   GAMEPAD                                                           02/05/2023 22:19:44 PAGE 2   
+  44   2          case I2C_SYSCMD_SETUSB:
+  45   2            gamepadUSBModeSet((usb_subcore_t) rx_buffer[I2C_SUBCMD_IDX]);
+C51 COMPILER V9.60.0.0   GAMEPAD                                                           03/21/2023 20:03:58 PAGE 2   
 
   46   2            break;
   47   2      
-  48   2          case I2C_CMD_SETUSB:
-  49   2            gamepadUSBModeSet((Gamepad_USB_Subcore_TypeDef) rx_buffer[I2C_SUBCMD_IDX]);
+  48   2          case I2C_SYSCMD_SETMODE:
+  49   2            gamepadModeSet((ui2c_setmode_t) rx_buffer[I2C_SUBCMD_IDX]);
   50   2            break;
   51   2      
-  52   2          case I2C_CMD_INPUT:
+  52   2          case I2C_SYSCMD_INPUT:
   53   2            gamepadInput();
   54   2            break;
   55   2      
-  56   2          case I2C_CMD_CONFIG:
+  56   2          case I2C_SYSCMD_CONFIG:
   57   2            gamepadConfigInput();
   58   2            break;
   59   2        }
-  60   1      }
-  61          
-  62          void gamepadCheckStatus()
-  63          {
-  64   1        gamepadReturnCmd(I2C_RETURN_CMD_STATUS);
-  65   1      }
-  66          
-  67          // Handle a system command. Stop, start, or reset.
-  68          void gamepadModeSet(I2C_Command_Setmode_TypeDef cmd)
-  69          {
-  70   1        uint8_t usbret = USB_STATUS_OK;
-  71   1      
-  72   1        switch(cmd)
-  73   1        {
-  74   2            default:
-  75   2            case I2C_SETMODE_STOP:
-  76   2              gamepadStop();
-  77   2              break;
-  78   2      
-  79   2            case I2C_SETMODE_START:
-  80   2              gamepadStop();
-  81   2      
-  82   2              switch(gamepadSubcore)
-  83   2              {
-  84   3                default:
-  85   3                    break;
-  86   3      
-  87   3                case USB_SUBCORE_DINPUT:
-  88   3                    // Start USB
-  89   3                    usbret = USBD_Init(&dinput_init_struct);
-  90   3                    if (usbret != USB_STATUS_OK)
-  91   3                    {
-  92   4                      // Change nothing if we fail
-  93   4                      return;
-  94   4                    }
-  95   3                    else if (usbret == USB_STATUS_OK)
-  96   3                    {
-  97   4                      gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
-  98   4                      sendReport = true;
-  99   4                      return;
- 100   4                    }
- 101   3                    break;
- 102   3      
- 103   3                case USB_SUBCORE_NS:
- 104   3                    // Start USB
- 105   3                    usbret = USBD_Init(&nspro_init_struct);
- 106   3                    if (usbret != USB_STATUS_OK)
- 107   3                    {
- 108   4                      // Change nothing if we fail
-C51 COMPILER V9.60.0.0   GAMEPAD                                                           02/05/2023 22:19:44 PAGE 3   
+  60   1        gamepadReturnCmd();
+  61   1      }
+  62          
+  63          // Handle a system command. Stop, start, or reset.
+  64          void gamepadModeSet(ui2c_setmode_t cmd)
+  65          {
+  66   1        uint8_t usbret = USB_STATUS_OK;
+  67   1      
+  68   1        switch(cmd)
+  69   1        {
+  70   2            default:
+  71   2            case I2C_SETMODE_STOP:
+  72   2              gamepadStop();
+  73   2              break;
+  74   2      
+  75   2            case I2C_SETMODE_START:
+  76   2      
+  77   2              if (gamepadStatus == GAMEPAD_STATUS_INITIALIZED)
+  78   2              {
+  79   3                return;
+  80   3              }
+  81   2              switch(gamepadSubcore)
+  82   2              {
+  83   3                default:
+  84   3                    break;
+  85   3      
+  86   3                case USB_SUBCORE_DINPUT:
+  87   3                    // Start USB
+  88   3                    usbret = USBD_Init(&dinput_init_struct);
+  89   3                    if (usbret != USB_STATUS_OK)
+  90   3                    {
+  91   4                      // Change nothing if we fail
+  92   4                      return;
+  93   4                    }
+  94   3                    else if (usbret == USB_STATUS_OK)
+  95   3                    {
+  96   4                      gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
+  97   4                      return;
+  98   4                    }
+  99   3                    break;
+ 100   3      
+ 101   3                case USB_SUBCORE_NS:
+ 102   3                    // Start USB
+ 103   3                    usbret = USBD_Init(&nspro_init_struct);
+ 104   3                    if (usbret != USB_STATUS_OK)
+ 105   3                    {
+ 106   4                      // Change nothing if we fail
+ 107   4                      return;
+ 108   4                    }
+C51 COMPILER V9.60.0.0   GAMEPAD                                                           03/21/2023 20:03:58 PAGE 3   
 
- 109   4                      return;
- 110   4                    }
- 111   3                    else if (usbret == USB_STATUS_OK)
- 112   3                    {
- 113   4                      gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
- 114   4                      sendReport = true;
- 115   4                      return;
- 116   4                    }
- 117   3                    break;
- 118   3      
- 119   3                case USB_SUBCORE_XINPUT:
- 120   3                    // Start USB
- 121   3                    usbret = USBD_Init(&xinput_init_struct);
- 122   3                    if (usbret != USB_STATUS_OK)
- 123   3                    {
- 124   4                      // Change nothing if we fail
- 125   4                      return;
- 126   4                    }
- 127   3                    else if (usbret == USB_STATUS_OK)
- 128   3                    {
- 129   4                      gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
- 130   4                      sendReport = true;
- 131   4                      return;
- 132   4                    }
- 133   3                    break;
- 134   3      
- 135   3                case USB_SUBCORE_GCINPUT:
- 136   3                    // Start USB
- 137   3                    usbret = USBD_Init(&nspro_init_struct);
- 138   3                    if (usbret != USB_STATUS_OK)
- 139   3                    {
- 140   4                      // Change nothing if we fail
- 141   4                      return;
- 142   4                    }
- 143   3                    else if (usbret == USB_STATUS_OK)
- 144   3                    {
- 145   4                      gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
- 146   4                      sendReport = true;
- 147   4                      return;
- 148   4                    }
- 149   3                    break;
- 150   3              }
+ 109   3                    else if (usbret == USB_STATUS_OK)
+ 110   3                    {
+ 111   4                      gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
+ 112   4                      return;
+ 113   4                    }
+ 114   3                    break;
+ 115   3      
+ 116   3                case USB_SUBCORE_XINPUT:
+ 117   3                    // Start USB
+ 118   3                    usbret = USBD_Init(&xinput_init_struct);
+ 119   3                    if (usbret != USB_STATUS_OK)
+ 120   3                    {
+ 121   4                      // Change nothing if we fail
+ 122   4                      return;
+ 123   4                    }
+ 124   3                    else if (usbret == USB_STATUS_OK)
+ 125   3                    {
+ 126   4                        gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
+ 127   4                      return;
+ 128   4                    }
+ 129   3                    break;
+ 130   3      
+ 131   3                case USB_SUBCORE_GCINPUT:
+ 132   3                    // Start USB
+ 133   3                    usbret = USBD_Init(&nspro_init_struct);
+ 134   3                    if (usbret != USB_STATUS_OK)
+ 135   3                    {
+ 136   4                      // Change nothing if we fail
+ 137   4                      return;
+ 138   4                    }
+ 139   3                    else if (usbret == USB_STATUS_OK)
+ 140   3                    {
+ 141   4                      gamepadStatus = GAMEPAD_STATUS_INITIALIZED;
+ 142   4                      return;
+ 143   4                    }
+ 144   3                    break;
+ 145   3              }
+ 146   2              break;
+ 147   2      
+ 148   2            case I2C_SETMODE_RESET:
+ 149   2              gamepadModeSet(I2C_SETMODE_STOP);
+ 150   2              gamepadModeSet(I2C_SETMODE_START);
  151   2              break;
- 152   2      
- 153   2            case I2C_SETMODE_RESET:
- 154   2              gamepadModeSet(I2C_SETMODE_STOP);
- 155   2              gamepadModeSet(I2C_SETMODE_START);
- 156   2              break;
- 157   2        }
- 158   1      }
- 159          
- 160          // Set the USB Gamepad mode
- 161          void gamepadUSBModeSet(Gamepad_USB_Subcore_TypeDef coreType)
- 162          {
- 163   1          // Make sure we are IDLE
- 164   1          gamepadStop();
- 165   1          gamepadSubcore = USB_SUBCORE_IDLE;
- 166   1          gamepadSubcore = coreType;
- 167   1      }
- 168          
- 169          // Send a USB Input report with gamepad data
- 170          void gamepadInput()
- 171          {
-C51 COMPILER V9.60.0.0   GAMEPAD                                                           02/05/2023 22:19:44 PAGE 4   
+ 152   2        }
+ 153   1      }
+ 154          
+ 155          // Set the USB Gamepad mode
+ 156          void gamepadUSBModeSet(usb_subcore_t coreType)
+ 157          {
+ 158   1          // Make sure we are IDLE
+ 159   1          gamepadStop();
+ 160   1          gamepadSubcore = USB_SUBCORE_IDLE;
+ 161   1          gamepadSubcore = coreType;
+ 162   1      }
+ 163          
+ 164          // Send a USB Input report with gamepad data
+ 165          void gamepadInput()
+ 166          {
+ 167   1        if (usbStatus != USB_STATUS_BUSOK)
+ 168   1        {
+ 169   2            return;
+ 170   2        }
+ 171   1        else
+C51 COMPILER V9.60.0.0   GAMEPAD                                                           03/21/2023 20:03:58 PAGE 4   
 
- 172   1        if (usbStatus != USB_STATUS_BUSOK)
- 173   1        {
- 174   2          return;
- 175   2        }
- 176   1      
- 177   1        memcpy(&i2c_input_buffer, &rx_buffer[1], I2C_INPUT_SIZE);
- 178   1        switch(gamepadSubcore)
- 179   1        {
- 180   2          default:
- 181   2          case USB_SUBCORE_DINPUT:
- 182   2            dinputUpdateReport();
- 183   2            break;
- 184   2          case USB_SUBCORE_NS:
- 185   2            nsproUpdateReport();
- 186   2            break;
- 187   2          case USB_SUBCORE_XINPUT:
- 188   2            xinputUpdateReport();
- 189   2            break;
- 190   2          case USB_SUBCORE_GCINPUT:
- 191   2            break;
- 192   2        }
- 193   1      }
- 194          
- 195          // Send a USB Input report with config data
- 196          void gamepadConfigInput()
- 197          {
- 198   1      
- 199   1      }
- 200          
+ 172   1        {
+ 173   2          memcpy(&i2c_input_buffer, &rx_buffer[1], I2C_INPUT_SIZE);
+ 174   2      
+ 175   2          switch(gamepadSubcore)
+ 176   2          {
+ 177   3            default:
+ 178   3            case USB_SUBCORE_DINPUT:
+ 179   3              dinputUpdateReport();
+ 180   3              break;
+ 181   3            case USB_SUBCORE_NS:
+ 182   3              nsproUpdateReport();
+ 183   3              break;
+ 184   3            case USB_SUBCORE_XINPUT:
+ 185   3              xinputUpdateReport();
+ 186   3              break;
+ 187   3            case USB_SUBCORE_GCINPUT:
+ 188   3              break;
+ 189   3          }
+ 190   2        }
+ 191   1      
+ 192   1      }
+ 193          
+ 194          // Send a USB Input report with config data
+ 195          void gamepadConfigInput()
+ 196          {
+ 197   1      
+ 198   1      }
+ 199          
+ 200          bool first_set = false;
  201          
  202          // Pass through config data request to I2C
- 203          void gamepadReturnCmd(I2C_Return_Command_TypeDef ret_cmd)
+ 203          void gamepadReturnCmd()
  204          {
- 205   1        // Clear TX buffer first
- 206   1        memset(&tx_buffer, 0, sizeof(tx_buffer));
- 207   1      
- 208   1        switch(ret_cmd)
- 209   1        {
- 210   2          default:
- 211   2            break;
- 212   2      
- 213   2          case I2C_RETURN_CMD_STATUS:
- 214   2            tx_buffer[I2C_COMMAND_IDX] = I2C_RETURN_CMD_STATUS;
- 215   2            tx_buffer[I2C_DATA_IDX] = usbStatus;
- 216   2            tx_buffer[I2C_DATA_IDX+1] = gamepadStatus;
- 217   2            break;
- 218   2      
- 219   2          case I2C_RETURN_CMD_RUMBLE:
- 220   2            tx_buffer[I2C_COMMAND_IDX] = I2C_RETURN_CMD_RUMBLE;
- 221   2            tx_buffer[I2C_DATA_IDX] = gamepadRumble;
- 222   2            break;
- 223   2        }
+ 205   1        if (!first_set)
+ 206   1        {
+ 207   2            // Clear TX buffer first
+ 208   2            memset(&tx_buffer, 0, sizeof(tx_buffer));
+ 209   2            first_set = true;
+ 210   2        }
+ 211   1      
+ 212   1        ui2c_return_msg.rumble         = gpRumble;
+ 213   1        ui2c_return_msg.config_request = gpConfigRequest;
+ 214   1        ui2c_return_msg.config_write   = gpConfigWrite;
+ 215   1        ui2c_return_msg.gamepad_status = gamepadStatus;
+ 216   1        ui2c_return_msg.usb_status     = (usbStatus == USB_STATUS_BUSOK);
+ 217   1      
+ 218   1        if (gpConfigWrite)
+ 219   1          {
+ 220   2      
+ 221   2            memcpy(&tx_buffer[1], gpConfigData, 9);
+ 222   2            gpConfigWrite = false;
+ 223   2          }
  224   1      
- 225   1        tx_idx = 0;
- 226   1        tx_remaining = 11;
- 227   1      }
+ 225   1        if (gpConfigRequest)
+ 226   1        {
+ 227   2      
+ 228   2          memcpy(&tx_buffer[1], gpConfigData, 9);
+ 229   2          gpConfigRequest = false;
+ 230   2        }
+ 231   1      
+ 232   1        memcpy(&tx_buffer[0], &ui2c_return_msg, sizeof(uint8_t));
+ 233   1      
+ 234   1        tx_idx = 0;
+C51 COMPILER V9.60.0.0   GAMEPAD                                                           03/21/2023 20:03:58 PAGE 5   
+
+ 235   1        tx_remaining = 11;
+ 236   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    462    ----
+   CODE SIZE        =    569    ----
    CONSTANT SIZE    =     29    ----
-   XDATA SIZE       =      3       3
+   XDATA SIZE       =     11       2
    PDATA SIZE       =   ----    ----
-C51 COMPILER V9.60.0.0   GAMEPAD                                                           02/05/2023 22:19:44 PAGE 5   
-
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =      2    ----
+   BIT SIZE         =      5    ----
    EDATA SIZE       =   ----    ----
    HDATA SIZE       =   ----    ----
    XDATA CONST SIZE =   ----    ----
