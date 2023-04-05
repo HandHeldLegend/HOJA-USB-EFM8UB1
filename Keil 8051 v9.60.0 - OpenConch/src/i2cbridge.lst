@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   I2CBRIDGE                                                         03/21/2023 20:03:58 PAGE 1   
+C51 COMPILER V9.60.0.0   I2CBRIDGE                                                         04/04/2023 23:29:26 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE I2CBRIDGE
@@ -63,7 +63,7 @@ line level    source
   45   2          case I2C_ADDR_WR: // START+ADDR+W
   46   2            I2C0STAT &= ~(I2C0STAT_START__BMASK | I2C0STAT_WR__BMASK);
   47   2            rx_idx = 0;
-C51 COMPILER V9.60.0.0   I2CBRIDGE                                                         03/21/2023 20:03:58 PAGE 2   
+C51 COMPILER V9.60.0.0   I2CBRIDGE                                                         04/04/2023 23:29:26 PAGE 2   
 
   48   2            break;
   49   2      
@@ -128,7 +128,7 @@ line level    source
  108   3              rx_complete = true;
  109   3              rx_idx = 0;
  110   3            }
-C51 COMPILER V9.60.0.0   I2CBRIDGE                                                         03/21/2023 20:03:58 PAGE 3   
+C51 COMPILER V9.60.0.0   I2CBRIDGE                                                         04/04/2023 23:29:26 PAGE 3   
 
  111   2      
  112   2        }

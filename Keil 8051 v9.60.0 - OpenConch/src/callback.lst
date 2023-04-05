@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   CALLBACK                                                          03/21/2023 20:03:58 PAGE 1   
+C51 COMPILER V9.60.0.0   CALLBACK                                                          04/04/2023 23:29:25 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE CALLBACK
@@ -63,7 +63,7 @@ line level    source
   43          void
   44          USBD_ResetCb (void)
   45          {
-C51 COMPILER V9.60.0.0   CALLBACK                                                          03/21/2023 20:03:58 PAGE 2   
+C51 COMPILER V9.60.0.0   CALLBACK                                                          04/04/2023 23:29:25 PAGE 2   
 
   46   1      
   47   1      }
@@ -128,7 +128,7 @@ line level    source
  102   2            // A HID device must extend the standard GET_DESCRIPTOR command
  103   2            // with support for HID descriptors.
  104   2            switch (setup->bRequest)
-C51 COMPILER V9.60.0.0   CALLBACK                                                          03/21/2023 20:03:58 PAGE 3   
+C51 COMPILER V9.60.0.0   CALLBACK                                                          04/04/2023 23:29:25 PAGE 3   
 
  105   3            {
  106   3              case GET_DESCRIPTOR:
@@ -193,7 +193,7 @@ line level    source
  161   5                      retVal = USB_STATUS_OK;
  162   5                      break;
  163   5      
-C51 COMPILER V9.60.0.0   CALLBACK                                                          03/21/2023 20:03:58 PAGE 4   
+C51 COMPILER V9.60.0.0   CALLBACK                                                          04/04/2023 23:29:25 PAGE 4   
 
  164   5                    default: // Unhandled Interface
  165   5                      break;
@@ -258,7 +258,7 @@ line level    source
  224   3                if ((setup->wValue == 0)                      // Report ID
  225   3                    && (setup->wLength == 1)
  226   3                    && (setup->bmRequestType.Direction == USB_SETUP_DIR_IN))
-C51 COMPILER V9.60.0.0   CALLBACK                                                          03/21/2023 20:03:58 PAGE 5   
+C51 COMPILER V9.60.0.0   CALLBACK                                                          04/04/2023 23:29:25 PAGE 5   
 
  227   3                {
  228   3                  tmpUSBBuffer = idleGetDuration();

@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   IDLE                                                              03/21/2023 20:03:59 PAGE 1   
+C51 COMPILER V9.60.0.0   IDLE                                                              04/04/2023 23:29:26 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE IDLE
@@ -63,7 +63,7 @@ line level    source
   45           *****************************************************************************/
   46          bool isIdleTimerIndefinite(void)
   47          {
-C51 COMPILER V9.60.0.0   IDLE                                                              03/21/2023 20:03:59 PAGE 2   
+C51 COMPILER V9.60.0.0   IDLE                                                              04/04/2023 23:29:26 PAGE 2   
 
   48   1        // Infinite duration
   49   1        if (idle.duration == 0)
@@ -128,7 +128,7 @@ line level    source
  108           * @return idle duration in units of 4 ms (0 = infinite; 4 ms to 1020 ms)
  109           *****************************************************************************/
  110          uint8_t idleGetDuration(void)
-C51 COMPILER V9.60.0.0   IDLE                                                              03/21/2023 20:03:59 PAGE 3   
+C51 COMPILER V9.60.0.0   IDLE                                                              04/04/2023 23:29:26 PAGE 3   
 
  111          {
  112   1        return idle.duration;

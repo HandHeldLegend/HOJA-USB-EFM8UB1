@@ -2,6 +2,24 @@
 
 xinput_input_s xinput_reportBuffer;
 
+short xinput_sign_value(int input)
+{
+    int start = (int) input - 127;
+    if ((start * 256) > 32765)
+    {
+        start = 32765;
+    }
+    else if ((start * 256) < -32765)
+    {
+        start = -32765;
+    }
+    else
+    {
+        start *= 256;
+    }
+    return (short) start;
+}
+
 void xinputUpdateReport()
 {
   if (sendReport)
@@ -43,10 +61,10 @@ void xinputUpdateReport()
     xinput_reportBuffer.buttons_1.button_stick_left   = i2c_input_buffer.buttons_2.button_stick_left;
     xinput_reportBuffer.buttons_1.button_stick_right  = i2c_input_buffer.buttons_2.button_stick_right;
 
-    xinput_reportBuffer.stick_left_x    = (i2c_input_buffer.ls_x);
-    xinput_reportBuffer.stick_left_y    = (i2c_input_buffer.ls_y);
-    xinput_reportBuffer.stick_right_x   = (i2c_input_buffer.rs_x);
-    xinput_reportBuffer.stick_right_y   = (i2c_input_buffer.rs_y);
+    xinput_reportBuffer.stick_left_x    = xinput_sign_value((int) i2c_input_buffer.ls_x);
+    xinput_reportBuffer.stick_left_y    = xinput_sign_value((int) i2c_input_buffer.ls_y);
+    xinput_reportBuffer.stick_right_x   = xinput_sign_value((int) i2c_input_buffer.rs_x);
+    xinput_reportBuffer.stick_right_y   = xinput_sign_value((int) i2c_input_buffer.rs_y);
 
     xinput_reportBuffer.buttons_1.dpad_up     = i2c_input_buffer.buttons_1.dpad_up;
     xinput_reportBuffer.buttons_1.dpad_down   = i2c_input_buffer.buttons_1.dpad_down;

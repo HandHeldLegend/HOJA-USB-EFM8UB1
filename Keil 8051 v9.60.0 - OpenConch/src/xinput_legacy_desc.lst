@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.0.0   XINPUT_LEGACY_DESC                                                03/21/2023 20:03:59 PAGE 1   
+C51 COMPILER V9.60.0.0   XINPUT_LEGACY_DESC                                                04/04/2023 23:29:27 PAGE 1   
 
 
 C51 COMPILER V9.60.0.0, COMPILATION OF MODULE XINPUT_LEGACY_DESC
@@ -63,7 +63,7 @@ line level    source
   42              0x01,        // bNumInterfaces 1
   43              0x01,        // bConfigurationValue
   44              0x00,        // iConfiguration (String Index)
-C51 COMPILER V9.60.0.0   XINPUT_LEGACY_DESC                                                03/21/2023 20:03:59 PAGE 2   
+C51 COMPILER V9.60.0.0   XINPUT_LEGACY_DESC                                                04/04/2023 23:29:27 PAGE 2   
 
   45              0x80,        // bmAttributes
   46              0xFA,        // bMaxPower 500mA
@@ -128,7 +128,7 @@ line level    source
              -   // stringDescriptors
  102            sizeof(xinput_UsbStringTable_USEnglish) / sizeof(xinput_UsbStringTable_USEnglish[0])                    
              -        // numberOfStrings
-C51 COMPILER V9.60.0.0   XINPUT_LEGACY_DESC                                                03/21/2023 20:03:59 PAGE 3   
+C51 COMPILER V9.60.0.0   XINPUT_LEGACY_DESC                                                04/04/2023 23:29:27 PAGE 3   
 
  103          };
 
